@@ -35,7 +35,7 @@ pixelvault/
 ```
 
 ## Prompts Status
-- [ ] **1** — Backend scaffold: `backend/` dirs, `requirements.txt`, `main.py` (health check), `config.py`, `.env.example`, `db/schema.py` (photos, tags, faces tables), `db/connection.py`
+- [x] **1** — Backend scaffold: `backend/` dirs, `requirements.txt`, `main.py` (health check), `config.py`, `.env.example`, `db/schema.py` (photos, tags, faces tables), `db/connection.py`
 - [ ] **2** — Auth middleware + sync endpoints: `api/auth.py` (Bearer token), `POST /sync/upload`, `GET /sync/status`, `/api/v1` prefix
 - [ ] **3** — ML pipeline: `ml/base.py` (abstract MLModel), `ml/loader.py` (model registry), `ml/queue.py` (async job queue), `ml/scene/yolo.py` (YOLOv8 wrapper), `ml/food/classifier.py` (EfficientNet stub), `ml/processor.py` (orchestrator)
 - [ ] **4** — Face recognition: `ml/face/detector.py` (InsightFace ArcFace), `ml/face/cluster.py` (cosine sim clustering, threshold 0.6), `api/routes/faces.py` (GET clusters, GET cluster photos, PUT name)

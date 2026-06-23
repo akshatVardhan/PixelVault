@@ -1,0 +1,27 @@
+SQL_CREATE_TABLES = """
+CREATE TABLE IF NOT EXISTS photos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT NOT NULL,
+    hash TEXT UNIQUE NOT NULL,
+    size INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    synced_at TEXT,
+    path TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    photo_id INTEGER NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    label TEXT NOT NULL,
+    confidence REAL
+);
+
+CREATE TABLE IF NOT EXISTS faces (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    photo_id INTEGER NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    cluster_id INTEGER,
+    embedding_path TEXT,
+    bbox TEXT
+);
+"""
