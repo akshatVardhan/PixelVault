@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["progress.md"],
+  "model": "deepseek-v4-flash-free",
+  "default_agent": "general",
+  "references": {
+    "gallery-specs": {
+      "path": "~/Downloads/gallery",
+      "description": "PixelVault project specs: README.md, claude.md, prompt.md"
+    }
+  }
+}
