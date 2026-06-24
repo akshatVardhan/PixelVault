@@ -40,7 +40,7 @@ pixelvault/
 - [x] **3** — ML pipeline: `ml/base.py` (abstract MLModel), `ml/loader.py` (model registry), `ml/queue.py` (async job queue), `ml/scene/yolo.py` (YOLOv8 wrapper), `ml/food/classifier.py` (EfficientNet stub), `ml/processor.py` (orchestrator)
 - [x] **4** — Face recognition: `ml/face/detector.py` (InsightFace ArcFace), `ml/face/cluster.py` (cosine sim clustering, threshold 0.6), `api/routes/faces.py` (GET clusters, GET cluster photos, PUT name + POST cluster)
 - [x] **5** — CLIP search: `ml/clip/encoder.py` (openai/clip-vit-base-patch32), `db/schema.py` +clip_embedding BLOB, `api/routes/search.py` (GET /search?q=, GET /search/tags)
-- [ ] **6** — Android scaffold: Kotlin minSdk 26, Hilt DI, Retrofit (base URL from DataStore), Room (PhotoEntity, TagEntity), WorkManager, Navigation Compose, SettingsDataStore
+- [x] **6** — Android scaffold: Kotlin minSdk 26, Hilt DI, Retrofit (base URL from DataStore), Room (PhotoEntity, TagEntity, PhotoDao, TagDao), WorkManager (SyncWorker, SyncScheduler, SyncStatusRepo), Navigation Compose (Screen, NavGraph), SettingsDataStore
 - [ ] **7** — Android sync: SyncWorker (MediaStore → hash → upload), SyncScheduler (12h periodic, WiFi req), SyncStatusRepo, SyncStatusBar, READ_MEDIA_IMAGES perm
 - [ ] **8** — Gallery UI: GalleryScreen (date-grouped grid), GalleryViewModel, PhotoDetailScreen (tags chips, faces), PeopleScreen (cluster grid), PersonPhotosScreen, Navigation graph
 - [ ] **9** — Search UI: SearchScreen (debounced 500ms, shimmer), SearchApiService, SearchViewModel, bottom nav search icon
