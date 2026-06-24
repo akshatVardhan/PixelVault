@@ -21,7 +21,7 @@ class SettingsDataStore @Inject constructor(
     companion object {
         private val KEY_BASE_URL = stringPreferencesKey("base_url")
         private val KEY_AUTH_TOKEN = stringPreferencesKey("auth_token")
-        private const val DEFAULT_BASE_URL = "http://192.168.1.100:8000"
+        private const val DEFAULT_BASE_URL = "http://10.0.2.2:8000"
         private const val DEFAULT_AUTH_TOKEN = "dev-token"
     }
 
