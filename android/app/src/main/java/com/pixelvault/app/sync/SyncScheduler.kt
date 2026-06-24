@@ -16,10 +16,11 @@ class SyncScheduler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private const val WORK_NAME = "photo_sync"
+        private const val SYNC_WORK_NAME = "photo_sync"
+        private const val NOTIF_WORK_NAME = "on_this_day"
     }
 
-    fun schedule(intervalHours: Long = 12) {
+    fun scheduleSync(intervalHours: Long = 12) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED)
             .setRequiresBatteryNotLow(true)
@@ -30,13 +31,30 @@ class SyncScheduler @Inject constructor(
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            WORK_NAME,
+            SYNC_WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,
             request
         )
     }
 
-    fun cancel() {
-        WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+    fun scheduleDailyNotification() {
+        val request = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            NOTIF_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+
+    fun cancelAll() {
+        WorkManager.getInstance(context).cancelUniqueWork(SYNC_WORK_NAME)
+        WorkManager.getInstance(context).cancelUniqueWork(NOTIF_WORK_NAME)
     }
 }

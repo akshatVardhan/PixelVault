@@ -68,6 +68,9 @@ data class ClusterNameUpdate(
 
 interface ApiService {
 
+    @GET("api/v1/notifications/on-this-day")
+    suspend fun getOnThisDay(): Response<Map<String, Any>>
+
     @Multipart
     @POST("api/v1/sync/upload")
     suspend fun uploadPhoto(

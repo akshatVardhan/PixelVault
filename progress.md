@@ -44,7 +44,7 @@ pixelvault/
 - [x] **7** — Android sync: SyncWorker (MediaStore → hash → upload), SyncScheduler (12h periodic, WiFi req), SyncStatusRepo, SyncStatusBar, READ_MEDIA_IMAGES perm
 - [x] **8** — Gallery UI: GalleryScreen (date-grouped grid), GalleryViewModel, PhotoDetailScreen (tags chips, faces), PeopleScreen (cluster grid), PersonPhotosScreen, Navigation graph
 - [x] **9** — Search UI: SearchScreen (debounced 500ms, shimmer), SearchApiService, SearchViewModel, bottom nav search icon
-- [ ] **10** — Dashboard + notifications: backend/dashboard/ (Jinja2 HTML: stats, chart, logs), GET /notifications/on-this-day, Android NotificationWorker (daily)
+- [x] **10** — Dashboard + notifications: backend/dashboard/ (Jinja2 HTML: stats, chart, logs), GET /notifications/on-this-day, Android NotificationWorker (daily)
 
 ## Key Decisions
 - ML runs on PC (RTX 3070), not on-device

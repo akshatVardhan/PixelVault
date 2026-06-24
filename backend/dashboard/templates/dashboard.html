@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelVault Dashboard</title>
+    <link rel="stylesheet" href="/dashboard/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+    <h1>📊 PixelVault Dashboard</h1>
+    <p style="color: #777;">{{ stats.uptime }}</p>
+
+    <div class="stats">
+        <div class="card">
+            <div class="value">{{ stats.total_photos }}</div>
+            <div class="label">Total Photos</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ stats.total_tags }}</div>
+            <div class="label">Tags</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ stats.total_faces }}</div>
+            <div class="label">Faces Detected</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ stats.total_clusters }}</div>
+            <div class="label">Face Clusters</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ stats.last_sync or "—" }}</div>
+            <div class="label">Last Sync</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ stats.on_this_day }}</div>
+            <div class="label">On This Day</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Photos Over Time</h2>
+        <canvas id="timelineChart" height="100"></canvas>
+    </div>
+
+    <h2>Recent Logs</h2>
+    <div class="logs">{% for log in logs %}<span class="{{ log.level }}">[{{ log.time }}] {{ log.message }}</span>\n{% endfor %}</div>
+
+    <script>
+    const ctx = document.getElementById('timelineChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart.labels | safe }},
+            datasets: [{
+                label: 'Photos',
+                data: {{ chart.data | safe }},
+                backgroundColor: '#6366f1',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+    </script>
+</body>
+</html>
