@@ -36,8 +36,8 @@ pixelvault/
 
 ## Prompts Status
 - [x] **1** — Backend scaffold: `backend/` dirs, `requirements.txt`, `main.py` (health check), `config.py`, `.env.example`, `db/schema.py` (photos, tags, faces tables), `db/connection.py`
-- [ ] **2** — Auth middleware + sync endpoints: `api/auth.py` (Bearer token), `POST /sync/upload`, `GET /sync/status`, `/api/v1` prefix
-- [ ] **3** — ML pipeline: `ml/base.py` (abstract MLModel), `ml/loader.py` (model registry), `ml/queue.py` (async job queue), `ml/scene/yolo.py` (YOLOv8 wrapper), `ml/food/classifier.py` (EfficientNet stub), `ml/processor.py` (orchestrator)
+- [x] **2** — Auth middleware + sync endpoints: `api/auth.py` (Bearer token), `POST /sync/upload`, `GET /sync/status`, `/api/v1` prefix
+- [x] **3** — ML pipeline: `ml/base.py` (abstract MLModel), `ml/loader.py` (model registry), `ml/queue.py` (async job queue), `ml/scene/yolo.py` (YOLOv8 wrapper), `ml/food/classifier.py` (EfficientNet stub), `ml/processor.py` (orchestrator)
 - [ ] **4** — Face recognition: `ml/face/detector.py` (InsightFace ArcFace), `ml/face/cluster.py` (cosine sim clustering, threshold 0.6), `api/routes/faces.py` (GET clusters, GET cluster photos, PUT name)
 - [ ] **5** — CLIP search: `ml/clip/encoder.py` (openai/clip-vit-base-patch32), `db/schema.py` +clip_embedding BLOB, `api/routes/search.py` (GET /search?q=, GET /search/tags)
 - [ ] **6** — Android scaffold: Kotlin minSdk 26, Hilt DI, Retrofit (base URL from DataStore), Room (PhotoEntity, TagEntity), WorkManager, Navigation Compose, SettingsDataStore
@@ -67,9 +67,9 @@ pixelvault/
 - **First action on session start: read this entire file** before doing anything else (opencode.json sets `instructions: ["progress.md"]` so this loads automatically)
 - One prompt at a time, lowest incomplete first, do not jump ahead
 - Always produce working/runnable code — no pseudocode or placeholders (use `# TODO:` only if needed + reason)
-- After each prompt, suggest commit msg: `feat(scope): desc`
+- After each prompt, commit and push to GitHub: `feat(scope): desc`
 - No gold-plating — build what prompt asks, note optional enhancements at end
-- After completing each prompt, mark it `[x]` in this file's Prompts Status section and save
+- After completing each prompt, mark it `[x]` in this file's Prompts Status section, save, commit, and push
 
 ## Agents (Role-Based Pipeline)
 

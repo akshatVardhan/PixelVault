@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     storage_path: Path = Path("./data/photos")
     db_path: Path = Path("./data/pixelvault.db")
     port: int = 8000
+    ml_device: str | None = None
+    yolo_model_path: str = "yolov8n.pt"
+    ml_num_workers: int = 1
 
     model_config = SettingsConfigDict(env_file=".env")
 
