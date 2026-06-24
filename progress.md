@@ -62,6 +62,8 @@ pixelvault/
 ## Bugs & Fixes
 | # | Date | Prompt | Issue | Fix | Status |
 |---|------|--------|-------|-----|--------|
+| 1 | 2026-06-24 | 4 | `FaceDetector.ctx_id` always `0` when device set, even for `cpu` | Changed condition from `device or "cuda" in device` to `device and "cuda" in device` | Fixed |
+| 2 | 2026-06-24 | 5 | `_store_result` / `_store_clip_result` used `await get_db()` instead of `async with get_db() as db:` | Changed all DB writes to use `async with` | Fixed |
 
 ## Rules (from claude.md)
 - **First action on session start: read this entire file** before doing anything else (opencode.json sets `instructions: ["progress.md"]` so this loads automatically)

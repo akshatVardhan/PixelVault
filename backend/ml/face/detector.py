@@ -10,7 +10,7 @@ class FaceDetector(MLModel):
     def __init__(self, device: str | None = None) -> None:
         super().__init__(name="face", device=device)
         self._app = None
-        self._ctx_id = 0 if (device or "cuda" in str(device or "")) else -1
+        self._ctx_id = 0 if (device and "cuda" in device) else -1
 
     def load(self) -> None:
         from insightface.app import FaceAnalysis

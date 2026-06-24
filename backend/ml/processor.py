@@ -38,12 +38,12 @@ class MLProcessor:
         if label is None:
             return
         async def write():
-            db = await get_db()
-            await db.execute(
-                "INSERT INTO tags (photo_id, type, label, confidence) VALUES (?, ?, ?, ?)",
-                (photo_id, model_name, str(label), result.get("confidence")),
-            )
-            await db.commit()
+            async with get_db() as db:
+                await db.execute(
+                    "INSERT INTO tags (photo_id, type, label, confidence) VALUES (?, ?, ?, ?)",
+                    (photo_id, model_name, str(label), result.get("confidence")),
+                )
+                await db.commit()
         import asyncio
         asyncio.run(write())
 
@@ -53,13 +53,13 @@ class MLProcessor:
         if not faces:
             return
         async def write():
-            db = await get_db()
-            for face in faces:
-                await db.execute(
-                    "INSERT INTO faces (photo_id, embedding_path, bbox) VALUES (?, ?, ?)",
-                    (photo_id, face["embedding_path"], str(face["bbox"])),
-                )
-            await db.commit()
+            async with get_db() as db:
+                for face in faces:
+                    await db.execute(
+                        "INSERT INTO faces (photo_id, embedding_path, bbox) VALUES (?, ?, ?)",
+                        (photo_id, face["embedding_path"], str(face["bbox"])),
+                    )
+                await db.commit()
         import asyncio
         asyncio.run(write())
 
@@ -69,12 +69,12 @@ class MLProcessor:
         if not embedding_bytes:
             return
         async def write():
-            db = await get_db()
-            await db.execute(
-                "UPDATE photos SET clip_embedding = ? WHERE id = ?",
-                (embedding_bytes, photo_id),
-            )
-            await db.commit()
+            async with get_db() as db:
+                await db.execute(
+                    "UPDATE photos SET clip_embedding = ? WHERE id = ?",
+                    (embedding_bytes, photo_id),
+                )
+                await db.commit()
         import asyncio
         asyncio.run(write())
 
