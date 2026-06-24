@@ -8,6 +8,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.pixelvault.app.data.local.PhotoDao
+import com.pixelvault.app.data.local.PhotoEntity
 import com.pixelvault.app.data.remote.ApiService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -15,6 +16,9 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
@@ -48,6 +52,21 @@ class SyncWorker @AssistedInject constructor(
                 )
 
                 if (response.isSuccessful && response.body()?.status == "uploaded") {
+                    val photoId = response.body()?.photoId ?: System.currentTimeMillis()
+                    val syncedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
+                    photoDao.insertAll(
+                        listOf(
+                            PhotoEntity(
+                                id = photoId,
+                                filename = filename,
+                                hash = hash,
+                                size = bytes.size.toLong(),
+                                createdAt = getDateTaken(uri) ?: syncedAt,
+                                syncedAt = syncedAt,
+                                path = uri.toString()
+                            )
+                        )
+                    )
                     uploaded++
                 }
             } catch (_: Exception) {
