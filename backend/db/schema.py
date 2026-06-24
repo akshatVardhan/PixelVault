@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS photos (
     size INTEGER NOT NULL,
     created_at TEXT NOT NULL,
     synced_at TEXT,
-    path TEXT NOT NULL
+    path TEXT NOT NULL,
+    clip_embedding BLOB
 );
 
 CREATE TABLE IF NOT EXISTS tags (

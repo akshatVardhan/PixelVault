@@ -31,6 +31,9 @@ class MLProcessor:
         if model_name == "face":
             MLProcessor._store_face_results(photo_id, result)
             return
+        if model_name == "clip":
+            MLProcessor._store_clip_result(photo_id, result)
+            return
         label = result.get("food_label") or (result.get("scene_labels") or [None])[0]
         if label is None:
             return
@@ -56,6 +59,21 @@ class MLProcessor:
                     "INSERT INTO faces (photo_id, embedding_path, bbox) VALUES (?, ?, ?)",
                     (photo_id, face["embedding_path"], str(face["bbox"])),
                 )
+            await db.commit()
+        import asyncio
+        asyncio.run(write())
+
+    @staticmethod
+    def _store_clip_result(photo_id: int, result: dict) -> None:
+        embedding_bytes = result.get("embedding")
+        if not embedding_bytes:
+            return
+        async def write():
+            db = await get_db()
+            await db.execute(
+                "UPDATE photos SET clip_embedding = ? WHERE id = ?",
+                (embedding_bytes, photo_id),
+            )
             await db.commit()
         import asyncio
         asyncio.run(write())
