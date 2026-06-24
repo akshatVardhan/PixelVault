@@ -64,6 +64,22 @@ pixelvault/
 |---|------|--------|-------|-----|--------|
 | 1 | 2026-06-24 | 4 | `FaceDetector.ctx_id` always `0` when device set, even for `cpu` | Changed condition from `device or "cuda" in device` to `device and "cuda" in device` | Fixed |
 | 2 | 2026-06-24 | 5 | `_store_result` / `_store_clip_result` used `await get_db()` instead of `async with get_db() as db:` | Changed all DB writes to use `async with` | Fixed |
+| 3 | 2026-06-24 | 6 | AndroidManifest.xml missing `xmlns:tools` namespace | Added `xmlns:tools="http://schemas.android.com/tools"` | Fixed |
+| 4 | 2026-06-24 | 6 | AndroidManifest.xml referenced missing `@mipmap/ic_launcher` | Removed `android:icon` and `android:roundIcon` attributes | Fixed |
+| 5 | 2026-06-24 | 7 | SyncStatusRepo exposed `MutableStateFlow` as `StateFlow` without `.asStateFlow()` | Added `.asStateFlow()` cast | Fixed |
+| 6 | 2026-06-24 | 7 | `Long.toRequestBody()` doesn't exist in OkHttp | Converted `size` from `Long` to `String` before calling `.toRequestBody()` | Fixed |
+| 7 | 2026-06-24 | 7 | `createdAt` was raw `String` instead of `RequestBody` | Wrapped with `.toRequestBody("text/plain".toMediaTypeOrNull())` | Fixed |
+| 8 | 2026-06-24 | 7 | SyncWorker didn't save uploaded photos to local Room DB after upload | Added `photoDao.insertAll()` call on successful upload | Fixed |
+| 9 | 2026-06-24 | 6 | Default base URL in `SettingsDataStore.kt` was `192.168.1.100:8000` | Changed default to `http://10.0.2.2:8000` (emulator alias for host) | Fixed |
+| 10 | 2026-06-24 | 7 | `queryMediaStore()` returned empty on emulator (unknown cause) | Replaced with direct filesystem scan of `/sdcard/Pictures/`, `/sdcard/DCIM/`, `/sdcard/Download/` | Fixed |
+| 11 | 2026-06-24 | 6 | `@HiltViewModel` class was `object` instead of `class` | Changed from `object GalleryViewModel` to `class GalleryViewModel` | Fixed |
+| 12 | 2026-06-24 | 8 | GalleryScreen missing runtime permission request for `READ_MEDIA_IMAGES` (API 33+) | Added `rememberLauncherForActivityResult` with `RequestPermission` contract, launched on first composition | Fixed |
+| 13 | 2026-06-24 | 8 | `GalleryPhotoItem.kt` used `File(photo.path)` instead of `Uri.parse(photo.path)` for Coil | Changed `File(photo.path)` → `Uri.parse(photo.path)` | Fixed |
+| 14 | 2026-06-24 | 6 | `NetworkModule.kt` `@BaseUrl` was hardcoded to `http://localhost:8000` (emulator's own localhost, not host) | Read from `SettingsDataStore` via `runBlocking { settings.baseUrl.first() }` | Fixed |
+| 15 | 2026-06-24 | 2 | Empty `created_at` string caused 422 from backend FastAPI | Changed `SyncWorker` to send `SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(Date())` as fallback | Fixed |
+| 16 | 2026-06-24 | 2 | Backend `sync.py` returned 422 on invalid date format instead of falling back | Changed `datetime.fromisoformat("")` to fall back to `datetime.now()` | Fixed |
+| 17 | 2026-06-24 | 7 | Duplicate responses (`"duplicate"`) not saving to local Room DB — condition only checked `"uploaded"` | Changed condition to `body?.status == "uploaded" || body?.status == "duplicate"` | Fixed |
+| 18 | 2026-06-24 | 7 | Dozens of stale WorkManager periodic jobs piling up, causing unpredictable behavior | Bypassed WorkManager for manual sync — `GalleryViewModel.triggerSync()` runs sync directly on `Dispatchers.IO` via `viewModelScope.launch`; SyncWorker rewritten to match same approach | Fixed |
 
 ## Rules (from claude.md)
 - **First action on session start: read this entire file** before doing anything else (opencode.json sets `instructions: ["progress.md"]` so this loads automatically)

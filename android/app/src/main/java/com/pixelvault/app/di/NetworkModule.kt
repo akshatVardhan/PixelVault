@@ -1,10 +1,13 @@
 package com.pixelvault.app.di
 
+import com.pixelvault.app.data.local.SettingsDataStore
 import com.pixelvault.app.data.remote.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -29,7 +32,8 @@ object NetworkModule {
     @Provides
     @Singleton
     @BaseUrl
-    fun provideBaseUrl(): String = "http://localhost:8000"
+    fun provideBaseUrl(settings: SettingsDataStore): String =
+        runBlocking { settings.baseUrl.first() }
 
     @Provides
     @Singleton

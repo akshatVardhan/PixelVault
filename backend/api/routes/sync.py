@@ -21,7 +21,7 @@ async def upload_photo(
     try:
         dt = datetime.fromisoformat(created_at)
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid created_at format")
+        dt = datetime.now()
 
     async with get_db() as db:
         cursor = await db.execute("SELECT id FROM photos WHERE hash = ?", (hash,))
