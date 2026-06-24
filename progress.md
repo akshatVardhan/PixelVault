@@ -38,7 +38,7 @@ pixelvault/
 - [x] **1** — Backend scaffold: `backend/` dirs, `requirements.txt`, `main.py` (health check), `config.py`, `.env.example`, `db/schema.py` (photos, tags, faces tables), `db/connection.py`
 - [x] **2** — Auth middleware + sync endpoints: `api/auth.py` (Bearer token), `POST /sync/upload`, `GET /sync/status`, `/api/v1` prefix
 - [x] **3** — ML pipeline: `ml/base.py` (abstract MLModel), `ml/loader.py` (model registry), `ml/queue.py` (async job queue), `ml/scene/yolo.py` (YOLOv8 wrapper), `ml/food/classifier.py` (EfficientNet stub), `ml/processor.py` (orchestrator)
-- [ ] **4** — Face recognition: `ml/face/detector.py` (InsightFace ArcFace), `ml/face/cluster.py` (cosine sim clustering, threshold 0.6), `api/routes/faces.py` (GET clusters, GET cluster photos, PUT name)
+- [x] **4** — Face recognition: `ml/face/detector.py` (InsightFace ArcFace), `ml/face/cluster.py` (cosine sim clustering, threshold 0.6), `api/routes/faces.py` (GET clusters, GET cluster photos, PUT name + POST cluster)
 - [ ] **5** — CLIP search: `ml/clip/encoder.py` (openai/clip-vit-base-patch32), `db/schema.py` +clip_embedding BLOB, `api/routes/search.py` (GET /search?q=, GET /search/tags)
 - [ ] **6** — Android scaffold: Kotlin minSdk 26, Hilt DI, Retrofit (base URL from DataStore), Room (PhotoEntity, TagEntity), WorkManager, Navigation Compose, SettingsDataStore
 - [ ] **7** — Android sync: SyncWorker (MediaStore → hash → upload), SyncScheduler (12h periodic, WiFi req), SyncStatusRepo, SyncStatusBar, READ_MEDIA_IMAGES perm

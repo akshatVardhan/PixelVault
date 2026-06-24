@@ -28,7 +28,10 @@ class MLProcessor:
 
     @staticmethod
     def _store_result(photo_id: int, model_name: str, result: dict) -> None:
-        label = result.get("food_label") or result.get("scene_labels", [None])[0]
+        if model_name == "face":
+            MLProcessor._store_face_results(photo_id, result)
+            return
+        label = result.get("food_label") or (result.get("scene_labels") or [None])[0]
         if label is None:
             return
         async def write():
@@ -37,6 +40,22 @@ class MLProcessor:
                 "INSERT INTO tags (photo_id, type, label, confidence) VALUES (?, ?, ?, ?)",
                 (photo_id, model_name, str(label), result.get("confidence")),
             )
+            await db.commit()
+        import asyncio
+        asyncio.run(write())
+
+    @staticmethod
+    def _store_face_results(photo_id: int, result: dict) -> None:
+        faces = result.get("faces", [])
+        if not faces:
+            return
+        async def write():
+            db = await get_db()
+            for face in faces:
+                await db.execute(
+                    "INSERT INTO faces (photo_id, embedding_path, bbox) VALUES (?, ?, ?)",
+                    (photo_id, face["embedding_path"], str(face["bbox"])),
+                )
             await db.commit()
         import asyncio
         asyncio.run(write())

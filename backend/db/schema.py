@@ -24,4 +24,10 @@ CREATE TABLE IF NOT EXISTS faces (
     embedding_path TEXT,
     bbox TEXT
 );
+
+CREATE TABLE IF NOT EXISTS clusters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
