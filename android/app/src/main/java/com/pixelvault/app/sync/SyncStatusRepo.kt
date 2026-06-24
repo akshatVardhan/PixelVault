@@ -2,8 +2,9 @@ package com.pixelvault.app.sync
 
 import com.pixelvault.app.data.local.PhotoDao
 import com.pixelvault.app.data.remote.ApiService
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,7 +20,7 @@ class SyncStatusRepo @Inject constructor(
     private val photoDao: PhotoDao
 ) {
     private val _status = MutableStateFlow(SyncStatus())
-    val status: Flow<SyncStatus> = _status
+    val status: StateFlow<SyncStatus> = _status.asStateFlow()
 
     suspend fun refresh() {
         _status.value = _status.value.copy(isSyncing = true)

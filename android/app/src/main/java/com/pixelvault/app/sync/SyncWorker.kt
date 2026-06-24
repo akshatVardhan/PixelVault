@@ -43,8 +43,8 @@ class SyncWorker @AssistedInject constructor(
                     file = filePart,
                     filename = filename.toRequestBody("text/plain".toMediaTypeOrNull()),
                     hash = hash.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    size = bytes.size.toLong().toRequestBody("text/plain".toMediaTypeOrNull()),
-                    createdAt = getDateTaken(uri) ?: ""
+                    size = bytes.size.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
+                    createdAt = (getDateTaken(uri) ?: "").toRequestBody("text/plain".toMediaTypeOrNull())
                 )
 
                 if (response.isSuccessful && response.body()?.status == "uploaded") {

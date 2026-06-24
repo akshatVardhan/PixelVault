@@ -10,7 +10,6 @@
     <application
         android:name=".PixelVaultApp"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
         android:label="PixelVault"
         android:supportsRtl="true"
         android:theme="@style/Theme.PixelVault"
