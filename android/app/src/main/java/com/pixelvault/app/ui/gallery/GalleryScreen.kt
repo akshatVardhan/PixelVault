@@ -1,5 +1,10 @@
 package com.pixelvault.app.ui.gallery
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,9 +23,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelvault.app.sync.SyncStatusBar
 
@@ -31,13 +41,39 @@ fun GalleryScreen(
     viewModel: GalleryViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    var permissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES
+                else Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        permissionGranted = granted
+        if (granted) viewModel.triggerSync()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("PixelVault") },
                 actions = {
-                    TextButton(onClick = { viewModel.triggerSync() }) {
+                    TextButton(onClick = {
+                        if (permissionGranted) {
+                            viewModel.triggerSync()
+                        } else {
+                            permissionLauncher.launch(
+                                if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES
+                                else Manifest.permission.READ_EXTERNAL_STORAGE
+                            )
+                        }
+                    }) {
                         Text("Sync")
                     }
                 }

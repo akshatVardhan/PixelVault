@@ -1,5 +1,6 @@
 package com.pixelvault.app.ui.gallery
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import coil.compose.AsyncImage
 import com.pixelvault.app.data.local.PhotoEntity
-import java.io.File
 
 @Composable
 fun GalleryPhotoItem(
@@ -16,7 +16,7 @@ fun GalleryPhotoItem(
     modifier: Modifier = Modifier
 ) {
     AsyncImage(
-        model = File(photo.path),
+        model = Uri.parse(photo.path),
         contentDescription = photo.filename,
         modifier = modifier
             .fillMaxWidth()
