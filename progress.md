@@ -83,6 +83,7 @@ pixelvault/
 
 ## Rules (from claude.md)
 - **First action on session start: read this entire file** before doing anything else (opencode.json sets `instructions: ["progress.md"]` so this loads automatically)
+- **Then read `.opencode/workflow.md`** for the branching strategy and promotion rules
 - One prompt at a time, lowest incomplete first, do not jump ahead
 - Always produce working/runnable code — no pseudocode or placeholders (use `# TODO:` only if needed + reason)
 - After each prompt, commit and push to GitHub: `feat(scope): desc`
@@ -91,24 +92,24 @@ pixelvault/
 
 ## Agents (Role-Based Pipeline)
 
-**Workflow**: `Architect → Coder → Tester → [Debugger ↔ Tester loop] → Reviewer → Commit`
+**Pipeline**: `Architect → Coder → Tester → [Debugger ↔ Tester loop] → Tester merges to staging → Reviewer creates PR → You approve`
 
-| Agent | Color | Model | Job | Handoff |
-|-------|-------|-------|-----|---------|
-| **Architect** | pink | sonnet | Designs architecture, produces structured plan with DoD | → Coder |
-| **Coder** | green | opus | Implements code per plan | → Tester |
-| **Tester** | red | sonnet | Writes & runs tests; if fail → Debugger | → Debugger or Reviewer |
-| **Debugger** | yellow | sonnet | Diagnoses & fixes bugs; loops back to Tester | → Tester |
-| **Reviewer** | purple | sonnet | Final quality gate: correctness, security, style, spec compliance | → Commit |
+| Agent | Color | Model | Job | Branch | Handoff |
+|-------|-------|-------|-----|--------|---------|
+| **Architect** | pink | sonnet | Designs architecture, produces structured plan with DoD | — (no branches) | → Coder |
+| **Coder** | green | opus | Implements code per plan | `feature/<name>` off `staging` | → Tester |
+| **Tester** | red | sonnet | Writes & runs tests; merges to staging on pass | merges **directly** to `staging` | → Debugger or merge to staging |
+| **Debugger** | yellow | sonnet | Diagnoses & fixes bugs; loops back to Tester | `bugfix/<name>` off `staging` (or `main`) | → Tester |
+| **Reviewer** | purple | sonnet | Final quality gate; creates PR staging→main | reviews `staging` | → creates PR, assigns you |
 
 ### Agent Files (opencode — auto-discovered from `.opencode/agents/`)
 | File | Role | Permission |
 |------|------|------------|
 | `.opencode/agents/architect.md` | Plans, designs. Never writes code. | `edit: deny` |
 | `.opencode/agents/coder.md` | Implements code per plan. | full |
-| `.opencode/agents/tester.md` | Writes & runs tests. Hands to debugger on failure. | full |
+| `.opencode/agents/tester.md` | Writes & runs tests. Merges to staging on pass. | full |
 | `.opencode/agents/debugger.md` | Fixes bugs, logs in Bugs & Fixes table. | full |
-| `.opencode/agents/reviewer.md` | Final quality gate. Approves/rejects. | `edit: deny` |
+| `.opencode/agents/reviewer.md` | Final quality gate. Creates PR staging→main. | `edit: deny` |
 
 ### Claude Counterparts (reference — at `~\..claude\agents\`)
 Same 5 agents exist there for Claude sessions. These opencode agents are independent equivalents.

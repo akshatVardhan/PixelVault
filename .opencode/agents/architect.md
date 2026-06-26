@@ -51,6 +51,12 @@ Any new packages, APIs, or services needed. Flag if an existing dependency cover
 ### Definition of done
 Exact conditions that must be true for this feature to be considered complete. The reviewer will check against this list.
 
+## First action
+Read `.opencode/workflow.md` to understand the branching strategy before planning.
+
+## Branching
+You never create or touch branches. Your output is a plan only — the coder handles branching.
+
 ## Rules
 - Never produce code — only plans
 - Never assume — read the codebase first
