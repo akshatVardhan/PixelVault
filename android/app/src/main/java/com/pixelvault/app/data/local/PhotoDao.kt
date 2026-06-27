@@ -25,4 +25,19 @@ interface PhotoDao {
 
     @Query("SELECT * FROM photos WHERE id NOT IN (SELECT DISTINCT photo_id FROM tags)")
     suspend fun getPhotosWithoutTags(): List<PhotoEntity>
+
+    @Query("SELECT * FROM photos WHERE is_processed = 0")
+    suspend fun getUnprocessedPhotos(): List<PhotoEntity>
+
+    @Query("UPDATE photos SET is_processed = 1 WHERE id = :id")
+    suspend fun markProcessed(id: Long)
+
+    @Query("UPDATE photos SET scene_label = :label, scene_confidence = :confidence WHERE id = :id")
+    suspend fun updateSceneLabel(id: Long, label: String?, confidence: Double?)
+
+    @Query("UPDATE photos SET food_label = :label WHERE id = :id")
+    suspend fun updateFoodLabel(id: Long, label: String?)
+
+    @Query("UPDATE photos SET face_count = :count WHERE id = :id")
+    suspend fun updateFaceCount(id: Long, count: Int)
 }
