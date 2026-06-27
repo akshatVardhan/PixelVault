@@ -14,7 +14,7 @@ pixelvault/
 ├── android/
 │   ├── app/
 │   │   ├── ui/          (gallery, detail, search, people, sync)
-│   │   ├── sync/        (PhotoProcessingWorker, RemoteSyncWorker, ProcessingScheduler, ProcessingStatusRepo)
+│   │   ├── sync/        (SyncWorker, SyncScheduler, SyncStatusRepo)
 │   │   ├── data/         (remote/Retrofit, local/Room + DAOs)
 │   │   ├── di/           (Hilt modules: NetworkModule, etc.)
 │   │   └── search/       (CLIP query UI)
@@ -45,14 +45,13 @@ pixelvault/
 - [x] **8** — Gallery UI: GalleryScreen (date-grouped grid), GalleryViewModel, PhotoDetailScreen (tags chips, faces), PeopleScreen (cluster grid), PersonPhotosScreen, Navigation graph
 - [x] **9** — Search UI: SearchScreen (debounced 500ms, shimmer), SearchApiService, SearchViewModel, bottom nav search icon
 - [x] **10** — Dashboard + notifications: backend/dashboard/ (Jinja2 HTML: stats, chart, logs), GET /notifications/on-this-day, Android NotificationWorker (daily)
-- [x] **11** — On-device ML pipeline: TFLite + ML Kit deps, FaceEntity/FaceDao, AppDatabase v2, DatabaseModule updates, MLModule, SceneDetector, FoodClassifier, FaceDetector, FaceEmbedder, ModelLoader, DelegateSelector, MLPipelineService
-- [x] **13** — Worker refactor: PhotoProcessingWorker replaces SyncWorker, optional RemoteSyncWorker, ProcessingScheduler/ProcessingStatusRepo/ProcessingStatusBar, NotificationWorker uses Room, GalleryViewModel local-first
+- [x] **15** — shadcn theme system with violet/slate palette, custom typography, shared components
 
 ## Key Decisions
-- ML runs on-device (TFLite + ML Kit) with optional GPU/NNAPI delegates
-- Local-first: photos processed on-device for scene/food/face; remote sync optional
-- HTTPS + token auth on LAN for optional remote sync
-- Incremental sync w/ hash-based dedup (remote) + hash-based skip (local)
+- ML runs on PC (RTX 3070), not on-device
+- Sync over local Wi-Fi every 12h (configurable)
+- HTTPS + token auth on LAN
+- Incremental sync w/ hash-based dedup
 - Face cluster threshold: cosine sim 0.6
 - CLIP model: openai/clip-vit-base-patch32
 - YOLO model: yolov8n.pt (nano)

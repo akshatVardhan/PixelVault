@@ -1,47 +1,100 @@
 package com.pixelvault.app.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightShadcnColors = ShadcnColors(
+    background = Slate50,
+    foreground = Slate950,
+    card = Color.White,
+    cardForeground = Slate950,
+    muted = Slate100,
+    mutedForeground = Slate500,
+    accent = Violet100,
+    accentForeground = Violet900,
+    border = Slate200,
+    ring = Violet500,
+    radius = 8.dp
+)
+
+private val DarkShadcnColors = ShadcnColors(
+    background = Slate950,
+    foreground = Slate50,
+    card = Slate900,
+    cardForeground = Slate50,
+    muted = Slate800,
+    mutedForeground = Slate400,
+    accent = Violet900,
+    accentForeground = Violet50,
+    border = Slate700,
+    ring = Violet400,
+    radius = 8.dp
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Violet500,
+    onPrimary = Color.White,
+    primaryContainer = Violet100,
+    onPrimaryContainer = Violet900,
+    secondary = Slate500,
+    onSecondary = Color.White,
+    secondaryContainer = Slate200,
+    onSecondaryContainer = Slate800,
+    background = Slate50,
+    onBackground = Slate950,
+    surface = Color.White,
+    onSurface = Slate950,
+    surfaceVariant = Slate100,
+    onSurfaceVariant = Slate500,
+    outline = Violet200,
+    outlineVariant = Slate200
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Violet400,
+    onPrimary = Slate950,
+    primaryContainer = Violet900,
+    onPrimaryContainer = Violet50,
+    secondary = Slate400,
+    onSecondary = Slate950,
+    secondaryContainer = Slate700,
+    onSecondaryContainer = Slate200,
+    background = Slate950,
+    onBackground = Slate50,
+    surface = Slate900,
+    onSurface = Slate50,
+    surfaceVariant = Slate800,
+    onSurfaceVariant = Slate400,
+    outline = Violet700,
+    outlineVariant = Slate700
 )
 
 @Composable
 fun PixelVaultTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
     }
+
+    val shadcnColors = if (darkTheme) DarkShadcnColors else LightShadcnColors
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -51,8 +104,12 @@ fun PixelVaultTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(LocalShadcnColors provides shadcnColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = ShadcnTypography,
+            shapes = ShadcnShapes,
+            content = content
+        )
+    }
 }
