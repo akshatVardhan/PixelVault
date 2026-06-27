@@ -11,7 +11,7 @@
 │  Kotlin / Jetpack Compose           │
 │  ├─ Gallery, Search, People UI      │
 │  ├─ On-Device ML Pipeline           │
-│  │  ├─ YOLOv8n INT8 (scene)          │
+│  │  ├─ YOLOv8n INT8 (scene)         │
 │  │  ├─ EfficientNet-Lite0 (food)    │
 │  │  ├─ ML Kit (face detect)         │
 │  │  └─ MobileFaceNet (embed)        │
