@@ -32,3 +32,5 @@ Thumbs.db
 *.h5
 *.hdf5
 model_cache/
+
+gradle-daemon-jvm.properties
