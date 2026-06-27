@@ -48,6 +48,10 @@ object MLModule {
 
     @Provides
     @Singleton
+    fun provideContentResolver(@ApplicationContext context: Context) = context.contentResolver
+
+    @Provides
+    @Singleton
     fun provideFaceClusterer(faceDao: FaceDao, clusterDao: ClusterDao) = FaceClusterer(faceDao, clusterDao)
 
     @Provides
