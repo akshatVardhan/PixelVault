@@ -25,4 +25,7 @@ interface PhotoDao {
 
     @Query("SELECT * FROM photos WHERE id NOT IN (SELECT DISTINCT photo_id FROM tags)")
     suspend fun getPhotosWithoutTags(): List<PhotoEntity>
+
+    @Query("SELECT * FROM photos WHERE is_processed = 0")
+    suspend fun getUnprocessedPhotos(): List<PhotoEntity>
 }

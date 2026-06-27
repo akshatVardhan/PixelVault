@@ -12,7 +12,8 @@ import javax.inject.Inject
 
 data class PersonPhotosState(
     val photos: List<PhotoDto> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val clusterName: String? = null
 )
 
 @HiltViewModel
@@ -32,9 +33,13 @@ class PersonPhotosViewModel @Inject constructor(
             _state.value = _state.value.copy(isLoading = true)
             try {
                 val response = apiService.getClusterPhotos(clusterId)
+                val clusterName = try {
+                    apiService.listClusters().body()?.clusters?.find { it.id == clusterId }?.name
+                } catch (_: Exception) { null }
                 _state.value = PersonPhotosState(
                     photos = response.body()?.photos ?: emptyList(),
-                    isLoading = false
+                    isLoading = false,
+                    clusterName = clusterName
                 )
             } catch (_: Exception) {
                 _state.value = PersonPhotosState(isLoading = false)

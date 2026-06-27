@@ -23,7 +23,7 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "pixelvault.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
 
     @Provides
     fun providePhotoDao(db: AppDatabase): PhotoDao = db.photoDao()

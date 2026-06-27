@@ -12,5 +12,7 @@ data class PhotoEntity(
     val size: Long,
     @ColumnInfo(name = "created_at") val createdAt: String,
     @ColumnInfo(name = "synced_at") val syncedAt: String?,
-    val path: String
+    val path: String,
+    @ColumnInfo(name = "is_processed") val isProcessed: Boolean = false,
+    @ColumnInfo(name = "scene_label") val sceneLabel: String? = null
 )

@@ -27,7 +27,8 @@ import javax.inject.Inject
 data class GalleryState(
     val photos: List<PhotoEntity> = emptyList(),
     val isLoading: Boolean = true,
-    val isSyncing: Boolean = false
+    val isSyncing: Boolean = false,
+    val unprocessedCount: Int = 0
 )
 
 @HiltViewModel
@@ -48,7 +49,8 @@ class GalleryViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
             val photos = photoDao.getAllPhotos()
-            _state.value = GalleryState(photos = photos, isLoading = false)
+            val unprocessed = photoDao.getUnprocessedPhotos().size
+            _state.value = GalleryState(photos = photos, isLoading = false, unprocessedCount = unprocessed)
         }
     }
 
