@@ -47,7 +47,6 @@ tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "te
 tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflow-lite-support" }
 tensorflow-lite-gpu = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflow-lite" }
 mlkit-face-detection = { module = "com.google.mlkit:face-detection", version.ref = "mlkit-face-detection" }
-tensorflow-lite-nnapi = { module = "org.tensorflow:tensorflow-lite-nnapi", version.ref = "tensorflow-lite" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
