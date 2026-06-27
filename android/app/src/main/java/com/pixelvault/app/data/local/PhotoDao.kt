@@ -28,4 +28,7 @@ interface PhotoDao {
 
     @Query("SELECT * FROM photos WHERE is_processed = 0")
     suspend fun getUnprocessedPhotos(): List<PhotoEntity>
+
+    @Query("SELECT * FROM photos WHERE hash = :hash LIMIT 1")
+    suspend fun getByHash(hash: String): PhotoEntity?
 }

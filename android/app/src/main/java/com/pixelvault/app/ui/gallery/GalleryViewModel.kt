@@ -1,12 +1,13 @@
 package com.pixelvault.app.ui.gallery
 
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pixelvault.app.data.local.PhotoDao
 import com.pixelvault.app.data.local.PhotoEntity
-import com.pixelvault.app.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -14,9 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
@@ -34,7 +32,6 @@ data class GalleryState(
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
     private val photoDao: PhotoDao,
-    private val apiService: ApiService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -59,7 +56,7 @@ class GalleryViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isSyncing = true)
             try {
-                syncNow()
+                scanLocalPhotos()
             } finally {
                 _state.value = _state.value.copy(isSyncing = false)
                 loadPhotos()
@@ -67,70 +64,47 @@ class GalleryViewModel @Inject constructor(
         }
     }
 
-    private suspend fun syncNow() = withContext(Dispatchers.IO) {
+    private suspend fun scanLocalPhotos() = withContext(Dispatchers.IO) {
+        val extensions = setOf("jpg", "jpeg", "png", "gif", "webp", "bmp")
         val dirs = listOf(
-            File(context.getExternalFilesDir(null)?.parentFile, "Pictures"),
-            File("/sdcard/Pictures"),
-            File("/sdcard/DCIM"),
-            File("/sdcard/Download"),
+            context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)?.parentFile?.let {
+                File(it, "Pictures")
+            },
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+            File(Environment.getExternalStorageDirectory(), "Download"),
         )
-        val files = mutableListOf<File>()
-        for (dir in dirs) {
-            if (!dir.exists()) continue
-            dir.walkTopDown().forEach { file ->
-                if (file.isFile && file.extension.lowercase() in listOf("jpg", "jpeg", "png", "gif", "webp", "bmp")) {
-                    files.add(file)
-                }
-            }
-        }
+        val files = dirs.filterNotNull().filter { it.exists() }
+            .flatMap { dir -> dir.walkTopDown().filter { it.isFile && it.extension.lowercase() in extensions }.toList() }
+
         if (files.isEmpty()) return@withContext
 
-        var uploaded = 0
+        var scanned = 0
+        val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
         for (file in files) {
             try {
                 val bytes = file.readBytes()
                 val hash = sha256(bytes)
-                val filename = file.name
-                val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
-
-                val filePart = MultipartBody.Part.createFormData(
-                    "file", filename,
-                    bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
-                )
-
-                val response = apiService.uploadPhoto(
-                    file = filePart,
-                    filename = filename.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    hash = hash.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    size = bytes.size.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
-                    createdAt = now.toRequestBody("text/plain".toMediaTypeOrNull())
-                )
-
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body?.status == "uploaded" || body?.status == "duplicate") {
-                        val photoId = body.photoId ?: System.currentTimeMillis()
-                        photoDao.insertAll(
-                            listOf(
-                                PhotoEntity(
-                                    id = photoId,
-                                    filename = filename,
-                                    hash = hash,
-                                    size = bytes.size.toLong(),
-                                    createdAt = now,
-                                    syncedAt = now,
-                                    path = file.toURI().toString()
-                                )
-                            )
+                if (photoDao.getByHash(hash) != null) continue
+                photoDao.insertAll(
+                    listOf(
+                        PhotoEntity(
+                            filename = file.name,
+                            hash = hash,
+                            size = bytes.size.toLong(),
+                            createdAt = now,
+                            syncedAt = now,
+                            path = Uri.fromFile(file).toString(),
+                            isProcessed = false
                         )
-                        uploaded++
-                    }
-                }
+                    )
+                )
+                scanned++
             } catch (e: Exception) {
-                Log.e("GalleryVM", "Sync failed for ${file.name}", e)
+                Log.e("GalleryVM", "Scan failed for ${file.name}", e)
             }
         }
-        Log.d("GalleryVM", "Synced $uploaded/${files.size} photos")
+        Log.d("GalleryVM", "Scanned $scanned/${files.size} photos")
     }
 
     private fun sha256(bytes: ByteArray): String {

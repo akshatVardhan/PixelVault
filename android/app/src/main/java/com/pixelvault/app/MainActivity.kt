@@ -32,6 +32,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pixelvault.app.data.local.SettingsDataStore
+import com.pixelvault.app.sync.ProcessingScheduler
 import com.pixelvault.app.ui.navigation.NavGraph
 import com.pixelvault.app.ui.navigation.Screen
 import com.pixelvault.app.ui.theme.LocalShadcnColors
@@ -56,9 +57,12 @@ val bottomNavItems = listOf(
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val settings: SettingsDataStore by inject()
+    private val processingScheduler: ProcessingScheduler by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        processingScheduler.scheduleProcessing()
+        processingScheduler.scheduleDailyNotification()
         setContent {
             val themeMode by settings.themeMode.collectAsState(initial = "SYSTEM")
             PixelVaultTheme(

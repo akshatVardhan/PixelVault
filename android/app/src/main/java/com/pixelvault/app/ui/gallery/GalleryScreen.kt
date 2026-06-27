@@ -65,7 +65,7 @@ fun GalleryScreen(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         permissionGranted = granted
-        if (granted) viewModel.triggerProcessing()
+        if (granted) viewModel.triggerSync()
     }
 
     Scaffold(
@@ -94,7 +94,7 @@ fun GalleryScreen(
                     }
                     IconButton(onClick = {
                         if (permissionGranted) {
-                            viewModel.triggerProcessing()
+                            viewModel.triggerSync()
                         } else {
                             permissionLauncher.launch(
                                 if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES
@@ -105,7 +105,7 @@ fun GalleryScreen(
                         Icon(
                             Icons.Default.PhotoLibrary,
                             contentDescription = "Process",
-                            tint = if (state.isProcessing)
+                            tint = if (state.isSyncing)
                                 MaterialTheme.colorScheme.primary
                             else
                                 LocalShadcnColors.current.mutedForeground
@@ -138,8 +138,8 @@ fun GalleryScreen(
             }
             else -> {
                 PullToRefreshBox(
-                    isRefreshing = state.isProcessing,
-                    onRefresh = { viewModel.triggerProcessing() },
+                    isRefreshing = state.isSyncing,
+                    onRefresh = { viewModel.triggerSync() },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
