@@ -38,7 +38,7 @@ class MLPipelineService @Inject constructor(
         if (bestScene != null) {
             photoDao.updateSceneLabel(photo.id, bestScene.label)
             tagDao.insertAll(
-                listOf(TagEntity(photoId = photo.id, label = bestScene.label, type = "scene"))
+                listOf(TagEntity(photoId = photo.id, label = bestScene.label, type = "scene", confidence = bestScene.confidence.toDouble()))
             )
         }
 
@@ -46,7 +46,7 @@ class MLPipelineService @Inject constructor(
         val bestFood = foodResults.firstOrNull()
         if (bestFood != null) {
             tagDao.insertAll(
-                listOf(TagEntity(photoId = photo.id, label = bestFood.label, type = "food"))
+                listOf(TagEntity(photoId = photo.id, label = bestFood.label, type = "food", confidence = null))
             )
         }
 

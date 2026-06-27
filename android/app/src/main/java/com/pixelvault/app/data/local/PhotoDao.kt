@@ -15,7 +15,7 @@ interface PhotoDao {
     suspend fun getPhotoById(id: Long): PhotoEntity?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(photos: List<PhotoEntity>)
+    suspend fun insertAll(photos: List<PhotoEntity>): List<Long>
 
     @Query("SELECT COUNT(*) FROM photos")
     suspend fun count(): Int

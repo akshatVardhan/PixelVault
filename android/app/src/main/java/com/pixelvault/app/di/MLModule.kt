@@ -58,6 +58,9 @@ object MLModule {
         faceDetector: FaceDetector,
         faceEmbedder: FaceEmbedder,
         faceClusterer: FaceClusterer,
-        db: com.pixelvault.app.data.local.AppDatabase
-    ) = MLPipelineService(sceneDetector, foodClassifier, faceDetector, faceEmbedder, faceClusterer, db)
+        photoDao: com.pixelvault.app.data.local.PhotoDao,
+        faceDao: FaceDao,
+        tagDao: com.pixelvault.app.data.local.TagDao,
+        contentResolver: android.content.ContentResolver
+    ) = MLPipelineService(sceneDetector, foodClassifier, faceDetector, faceEmbedder, faceClusterer, photoDao, faceDao, tagDao, contentResolver)
 }
