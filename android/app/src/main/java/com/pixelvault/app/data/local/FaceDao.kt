@@ -15,6 +15,9 @@ interface FaceDao {
     @Query("SELECT * FROM faces WHERE cluster_id = :clusterId")
     suspend fun getFacesByCluster(clusterId: Long): List<FaceEntity>
 
+    @Query("SELECT DISTINCT photo_id FROM faces WHERE cluster_id = :clusterId")
+    suspend fun getPhotoIdsByCluster(clusterId: Long): List<Long>
+
     @Query("SELECT * FROM faces WHERE cluster_id IS NULL")
     suspend fun getUnclusteredFaces(): List<FaceEntity>
 

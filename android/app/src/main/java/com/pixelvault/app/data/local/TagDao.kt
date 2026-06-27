@@ -22,4 +22,10 @@ interface TagDao {
 
     @Query("SELECT * FROM tags WHERE photo_id = :photoId AND type = :type")
     suspend fun getTagsByType(photoId: Long, type: String): List<TagEntity>
+
+    @Query("SELECT DISTINCT photo_id FROM tags WHERE label LIKE '%' || :query || '%'")
+    suspend fun searchPhotoIdsByLabel(query: String): List<Long>
+
+    @Query("SELECT DISTINCT photo_id FROM tags WHERE label LIKE '%' || :query || '%' AND type = 'scene'")
+    suspend fun searchPhotoIdsByScene(query: String): List<Long>
 }

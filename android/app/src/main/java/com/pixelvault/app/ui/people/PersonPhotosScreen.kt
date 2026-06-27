@@ -81,7 +81,7 @@ fun PersonPhotosScreen(
                 ) {
                     items(state.photos, key = { it.id }) { photo ->
                         GalleryPhotoItem(
-                            photo = photo.toPhotoEntity(),
+                            photo = photo,
                             onClick = {}
                         )
                     }
@@ -91,12 +91,4 @@ fun PersonPhotosScreen(
     }
 }
 
-private fun com.pixelvault.app.data.remote.PhotoDto.toPhotoEntity() = PhotoEntity(
-    id = id.toLong(),
-    filename = filename,
-    hash = "",
-    size = 0L,
-    createdAt = createdAt,
-    syncedAt = null,
-    path = path
-)
+

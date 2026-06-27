@@ -1,6 +1,7 @@
 package com.pixelvault.app.ui.people
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +23,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.pixelvault.app.data.remote.ClusterDto
+import com.pixelvault.app.data.local.ClusterEntity
 import com.pixelvault.app.ui.theme.LocalShadcnColors
 
 @Composable
 fun PersonClusterCard(
-    cluster: ClusterDto,
+    cluster: ClusterEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {

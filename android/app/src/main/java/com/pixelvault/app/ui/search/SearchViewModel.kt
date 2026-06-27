@@ -2,6 +2,9 @@ package com.pixelvault.app.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pixelvault.app.data.local.PhotoDao
+import com.pixelvault.app.data.local.PhotoEntity
+import com.pixelvault.app.data.local.TagDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,7 +15,7 @@ import javax.inject.Inject
 
 data class SearchState(
     val query: String = "",
-    val results: List<SearchResult> = emptyList(),
+    val results: List<PhotoEntity> = emptyList(),
     val isSearching: Boolean = false,
     val hasSearched: Boolean = false,
     val mode: SearchMode = SearchMode.TAGS,
@@ -23,7 +26,8 @@ enum class SearchMode { TAGS, SCENES, PEOPLE }
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchApi: SearchApiService
+    private val photoDao: PhotoDao,
+    private val tagDao: TagDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SearchState())
@@ -43,8 +47,8 @@ class SearchViewModel @Inject constructor(
             _state.value = _state.value.copy(isSearching = true)
             try {
                 val results = when (_state.value.mode) {
-                    SearchMode.TAGS -> searchApi.tagSearch(query)
-                    SearchMode.SCENES -> searchApi.tagSearch(query)
+                    SearchMode.TAGS -> searchTags(query)
+                    SearchMode.SCENES -> searchScenes(query)
                     SearchMode.PEOPLE -> emptyList()
                 }
                 _state.value = _state.value.copy(
@@ -56,6 +60,16 @@ class SearchViewModel @Inject constructor(
                 _state.value = _state.value.copy(isSearching = false, hasSearched = true)
             }
         }
+    }
+
+    private suspend fun searchTags(query: String): List<PhotoEntity> {
+        val photoIds = tagDao.searchPhotoIdsByLabel(query)
+        return photoIds.mapNotNull { photoDao.getPhotoById(it) }
+    }
+
+    private suspend fun searchScenes(query: String): List<PhotoEntity> {
+        val photoIds = tagDao.searchPhotoIdsByScene(query)
+        return photoIds.mapNotNull { photoDao.getPhotoById(it) }
     }
 
     fun setMode(mode: SearchMode) {

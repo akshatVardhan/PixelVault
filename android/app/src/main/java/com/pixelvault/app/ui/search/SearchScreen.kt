@@ -135,10 +135,10 @@ fun SearchScreen(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(state.results, key = { it.photo.id }) { result ->
+                        items(state.results, key = { it.id }) { photo ->
                             GalleryPhotoItem(
-                                photo = result.photo.toPhotoEntity(),
-                                onClick = { onPhotoClick(result.photo.id.toLong()) }
+                                photo = photo,
+                                onClick = { onPhotoClick(photo.id) }
                             )
                         }
                     }
@@ -148,12 +148,3 @@ fun SearchScreen(
     }
 }
 
-private fun com.pixelvault.app.data.remote.PhotoDto.toPhotoEntity() = PhotoEntity(
-    id = id.toLong(),
-    filename = filename,
-    hash = "",
-    size = 0L,
-    createdAt = createdAt,
-    syncedAt = null,
-    path = path
-)
