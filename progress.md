@@ -45,6 +45,8 @@ pixelvault/
 - [x] **8** — Gallery UI: GalleryScreen (date-grouped grid), GalleryViewModel, PhotoDetailScreen (tags chips, faces), PeopleScreen (cluster grid), PersonPhotosScreen, Navigation graph
 - [x] **9** — Search UI: SearchScreen (debounced 500ms, shimmer), SearchApiService, SearchViewModel, bottom nav search icon
 - [x] **10** — Dashboard + notifications: backend/dashboard/ (Jinja2 HTML: stats, chart, logs), GET /notifications/on-this-day, Android NotificationWorker (daily)
+- [x] **11** — Foundation: TFLite/ML Kit deps, Room schema v2 (FaceEntity, ClusterEntity, new PhotoEntity columns), DB migration, SettingsDataStore additions, aaptOptions for .tflite
+- [ ] **12** — On-device ML pipeline: ModelLoader, DelegateSelector, SceneDetector (YOLOv8n), FoodClassifier (EfficientNet-Lite0), FaceDetector (ML Kit), FaceEmbedder (MobileFaceNet), MLPipelineService orchestrator, bundle pre-converted TFLite models in assets
 
 ## Key Decisions
 - ML runs on PC (RTX 3070), not on-device
