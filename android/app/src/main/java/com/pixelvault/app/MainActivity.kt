@@ -23,6 +23,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
@@ -56,8 +58,8 @@ val bottomNavItems = listOf(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val settings: SettingsDataStore by inject()
-    private val processingScheduler: ProcessingScheduler by inject()
+    @Inject lateinit var settings: SettingsDataStore
+    @Inject lateinit var processingScheduler: ProcessingScheduler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +89,7 @@ private fun PixelVaultMainScreen() {
     val density = LocalDensity.current
 
     val showBottomBar = currentDestination?.route in bottomNavItems.map { it.route }
+    val borderColor = LocalShadcnColors.current.border
 
     Scaffold(
         bottomBar = {
@@ -95,9 +98,9 @@ private fun PixelVaultMainScreen() {
                     modifier = Modifier.drawBehind {
                         val borderWidth = with(density) { 1.dp.toPx() }
                         drawRect(
-                            color = LocalShadcnColors.current.border,
-                            top = 0f,
-                            bottom = borderWidth
+                            color = borderColor,
+                            topLeft = Offset.Zero,
+                            size = Size(size.width, borderWidth)
                         )
                     },
                     containerColor = MaterialTheme.colorScheme.surface
