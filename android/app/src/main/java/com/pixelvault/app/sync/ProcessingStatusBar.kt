@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,13 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun SyncStatusBar(
+fun ProcessingStatusBar(
     modifier: Modifier = Modifier,
-    viewModel: SyncStatusViewModel = hiltViewModel()
+    viewModel: ProcessingStatusViewModel = hiltViewModel()
 ) {
     val status by viewModel.status.collectAsState()
 
-    AnimatedVisibility(visible = status.isSyncing || status.lastSync != null) {
+    AnimatedVisibility(visible = status.isProcessing || status.lastProcessedTime != null || status.unprocessedCount > 0) {
         Surface(
             modifier = modifier
                 .fillMaxWidth()
@@ -39,20 +38,25 @@ fun SyncStatusBar(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (status.isSyncing) {
+                if (status.isProcessing) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "Syncing...",
+                        text = "Processing...",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                } else if (status.unprocessedCount > 0) {
+                    Text(
+                        text = "${status.unprocessedCount} photos to process",
                         style = MaterialTheme.typography.labelSmall
                     )
                 } else {
-                    val lastSync = status.lastSync?.take(16)?.replace("T", " ") ?: "Never"
+                    val last = status.lastProcessedTime?.take(16)?.replace("T", " ") ?: "Never"
                     Text(
-                        text = "Last sync: $lastSync  ·  ${status.totalPhotos} photos",
+                        text = "Last processed: $last",
                         style = MaterialTheme.typography.labelSmall
                     )
                 }

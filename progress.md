@@ -14,7 +14,7 @@ pixelvault/
 ├── android/
 │   ├── app/
 │   │   ├── ui/          (gallery, detail, search, people, sync)
-│   │   ├── sync/        (SyncWorker, SyncScheduler, SyncStatusRepo)
+│   │   ├── sync/        (PhotoProcessingWorker, RemoteSyncWorker, ProcessingScheduler, ProcessingStatusRepo)
 │   │   ├── data/         (remote/Retrofit, local/Room + DAOs)
 │   │   ├── di/           (Hilt modules: NetworkModule, etc.)
 │   │   └── search/       (CLIP query UI)
@@ -45,23 +45,14 @@ pixelvault/
 - [x] **8** — Gallery UI: GalleryScreen (date-grouped grid), GalleryViewModel, PhotoDetailScreen (tags chips, faces), PeopleScreen (cluster grid), PersonPhotosScreen, Navigation graph
 - [x] **9** — Search UI: SearchScreen (debounced 500ms, shimmer), SearchApiService, SearchViewModel, bottom nav search icon
 - [x] **10** — Dashboard + notifications: backend/dashboard/ (Jinja2 HTML: stats, chart, logs), GET /notifications/on-this-day, Android NotificationWorker (daily)
-- [x] **11** — Foundation: TFLite/ML Kit deps, Room schema v2 (FaceEntity, ClusterEntity, new PhotoEntity columns), DB migration, SettingsDataStore additions, aaptOptions for .tflite
-- [ ] **12** — On-device ML pipeline: ModelLoader, DelegateSelector, SceneDetector (YOLOv8n), FoodClassifier (EfficientNet-Lite0), FaceDetector (ML Kit), FaceEmbedder (MobileFaceNet), MLPipelineService orchestrator, bundle pre-converted TFLite models in assets
-- [ ] **13** — PhotoProcessingWorker: replace SyncWorker with local processing worker, ProcessingScheduler (battery+idle constraints), update SyncStatusRepo/Bar for processing state, rewrite NotificationWorker for local on-this-day
-- [ ] **14** — ViewModel switch + search + clustering: swap all ViewModels from API→Room, on-device tag search DAO, FaceClusterer (greedy cosine sim, threshold 0.6), remove unused network DTOs
-- [ ] **15** — shadcn theme system: custom violet/slate palette, ShadcnColors CompositionLocal, custom Typography, unified Shapes, extract shared components (GalleryPhotoItem badge, PersonClusterCard Avatar+Fallback), theme-aware ShimmerGrid
-- [ ] **16** — UI redesign + Settings screen: shadcn visual pass on all screens (gallery, search, people, detail, person-photos), bottom nav border style, full Settings screen (Appearance, Processing, Server/Advanced, Storage, About)
+- [x] **11** — On-device ML pipeline: TFLite + ML Kit deps, FaceEntity/FaceDao, AppDatabase v2, DatabaseModule updates, MLModule, SceneDetector, FoodClassifier, FaceDetector, FaceEmbedder, ModelLoader, DelegateSelector, MLPipelineService
+- [x] **13** — Worker refactor: PhotoProcessingWorker replaces SyncWorker, optional RemoteSyncWorker, ProcessingScheduler/ProcessingStatusRepo/ProcessingStatusBar, NotificationWorker uses Room, GalleryViewModel local-first
 
 ## Key Decisions
-- ML runs on PC (RTX 3070), not on-device
-- **2026-06-27**: PC is remote (different state). Moving all ML to on-device Android (Motorola Edge 60 Pro, Dimensity 8350, Mali-G615, NPU 780). PC becomes optional sync target.
-- On-device ML stack: TFLite (YOLOv8n INT8, EfficientNet-Lite0 INT8, MobileFaceNet) + ML Kit (face detection)
-- Delegate priority: NNAPI (NPU 780) → GPU (Mali-G615) → CPU (XNNPACK) with crash-safe probing
-- UI: shadcn-inspired design (violet/slate palette, custom typography, 8dp base radius), dynamic color off by default
-- CLI semantic search deferred (P17+)
-- Sync over local Wi-Fi every 12h (configurable)
-- HTTPS + token auth on LAN
-- Incremental sync w/ hash-based dedup
+- ML runs on-device (TFLite + ML Kit) with optional GPU/NNAPI delegates
+- Local-first: photos processed on-device for scene/food/face; remote sync optional
+- HTTPS + token auth on LAN for optional remote sync
+- Incremental sync w/ hash-based dedup (remote) + hash-based skip (local)
 - Face cluster threshold: cosine sim 0.6
 - CLIP model: openai/clip-vit-base-patch32
 - YOLO model: yolov8n.pt (nano)

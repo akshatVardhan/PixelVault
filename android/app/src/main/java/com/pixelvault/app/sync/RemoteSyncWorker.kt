@@ -8,6 +8,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.pixelvault.app.data.local.PhotoDao
 import com.pixelvault.app.data.local.PhotoEntity
+import com.pixelvault.app.data.local.SettingsDataStore
 import com.pixelvault.app.data.remote.ApiService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -21,14 +22,16 @@ import java.util.Date
 import java.util.Locale
 
 @HiltWorker
-class SyncWorker @AssistedInject constructor(
+class RemoteSyncWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val apiService: ApiService,
-    private val photoDao: PhotoDao
+    private val photoDao: PhotoDao,
+    private val settingsDataStore: SettingsDataStore
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
+        if (!settingsDataStore.remoteSyncEnabled.first()) return Result.success()
         val files = findImageFiles()
         if (files.isEmpty()) return Result.success()
 
@@ -75,7 +78,7 @@ class SyncWorker @AssistedInject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("SyncWorker", "Failed: ${file.name}", e)
+                Log.e("RemoteSyncWorker", "Failed: ${file.name}", e)
             }
         }
 
@@ -89,7 +92,6 @@ class SyncWorker @AssistedInject constructor(
             File(Environment.getExternalStorageDirectory(), "Download"),
         )
         val extensions = listOf("jpg", "jpeg", "png", "gif", "webp", "bmp")
-
         return dirs.filter { it.exists() }
             .flatMap { dir -> dir.walkTopDown().filter { it.isFile && it.extension.lowercase() in extensions }.toList() }
     }

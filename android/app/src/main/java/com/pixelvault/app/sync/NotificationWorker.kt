@@ -8,15 +8,18 @@ import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.pixelvault.app.data.remote.ApiService
+import com.pixelvault.app.data.local.PhotoDao
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @HiltWorker
 class NotificationWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val apiService: ApiService
+    private val photoDao: PhotoDao
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -26,21 +29,13 @@ class NotificationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         createChannel()
-        return try {
-            val response = apiService.getOnThisDay()
-            if (response.isSuccessful) {
-                val body = response.body()
-                val photos = body?.get("photos") as? List<*> ?: emptyList<Any>()
-                if (photos.isNotEmpty()) {
-                    showNotification(
-                        title = "On This Day",
-                        message = "${photos.size} photo(s) from this day in previous years"
-                    )
-                }
-            }
+        val today = SimpleDateFormat("MM-dd", Locale.US).format(Date())
+        val photos = photoDao.getPhotosOnThisDay(today)
+        return if (photos.isNotEmpty()) {
+            showNotification("On This Day", "${photos.size} photos from this day")
             Result.success()
-        } catch (_: Exception) {
-            Result.retry()
+        } else {
+            Result.success()
         }
     }
 

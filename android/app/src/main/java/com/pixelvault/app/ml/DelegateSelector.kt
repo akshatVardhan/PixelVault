@@ -52,7 +52,7 @@ class DelegateSelector @Inject constructor(
             when (type) {
                 DelegateType.NNAPI -> setDelegate(NnApiDelegate())
                 DelegateType.GPU -> setDelegate(GpuDelegateFactory().create())
-                DelegateType.CPU -> { /* no delegate */ }
+                DelegateType.CPU -> { }
             }
         }
         val input = ByteBuffer.allocateDirect(4).putFloat(1f).apply { rewind() }

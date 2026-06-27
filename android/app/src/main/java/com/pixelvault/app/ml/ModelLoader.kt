@@ -28,7 +28,7 @@ class ModelLoader @Inject constructor(
                 when (delegate) {
                     DelegateSelector.DelegateType.NNAPI -> setDelegate(org.tensorflow.lite.nnapi.NnApiDelegate())
                     DelegateSelector.DelegateType.GPU -> setDelegate(org.tensorflow.lite.gpu.GpuDelegateFactory().create())
-                    DelegateSelector.DelegateType.CPU -> { /* no delegate, uses XNNPACK */ }
+                    DelegateSelector.DelegateType.CPU -> { }
                 }
             }
             Interpreter(buffer, options)

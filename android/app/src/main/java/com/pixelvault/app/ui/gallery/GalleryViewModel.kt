@@ -1,12 +1,14 @@
 package com.pixelvault.app.ui.gallery
 
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pixelvault.app.data.local.PhotoDao
 import com.pixelvault.app.data.local.PhotoEntity
-import com.pixelvault.app.data.remote.ApiService
+import com.pixelvault.app.ml.MLPipelineService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -14,9 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
@@ -27,13 +26,13 @@ import javax.inject.Inject
 data class GalleryState(
     val photos: List<PhotoEntity> = emptyList(),
     val isLoading: Boolean = true,
-    val isSyncing: Boolean = false
+    val isProcessing: Boolean = false
 )
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
     private val photoDao: PhotoDao,
-    private val apiService: ApiService,
+    private val pipelineService: MLPipelineService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -52,25 +51,25 @@ class GalleryViewModel @Inject constructor(
         }
     }
 
-    fun triggerSync() {
-        if (_state.value.isSyncing) return
+    fun triggerProcessing() {
+        if (_state.value.isProcessing) return
         viewModelScope.launch {
-            _state.value = _state.value.copy(isSyncing = true)
+            _state.value = _state.value.copy(isProcessing = true)
             try {
-                syncNow()
+                processNow()
             } finally {
-                _state.value = _state.value.copy(isSyncing = false)
+                _state.value = _state.value.copy(isProcessing = false)
                 loadPhotos()
             }
         }
     }
 
-    private suspend fun syncNow() = withContext(Dispatchers.IO) {
+    private suspend fun processNow() = withContext(Dispatchers.IO) {
         val dirs = listOf(
             File(context.getExternalFilesDir(null)?.parentFile, "Pictures"),
-            File("/sdcard/Pictures"),
-            File("/sdcard/DCIM"),
-            File("/sdcard/Download"),
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+            File(Environment.getExternalStorageDirectory(), "Download"),
         )
         val files = mutableListOf<File>()
         for (dir in dirs) {
@@ -83,52 +82,34 @@ class GalleryViewModel @Inject constructor(
         }
         if (files.isEmpty()) return@withContext
 
-        var uploaded = 0
+        var processed = 0
         for (file in files) {
             try {
                 val bytes = file.readBytes()
                 val hash = sha256(bytes)
-                val filename = file.name
+                if (photoDao.getByHash(hash) != null) continue
                 val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
-
-                val filePart = MultipartBody.Part.createFormData(
-                    "file", filename,
-                    bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
-                )
-
-                val response = apiService.uploadPhoto(
-                    file = filePart,
-                    filename = filename.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    hash = hash.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    size = bytes.size.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
-                    createdAt = now.toRequestBody("text/plain".toMediaTypeOrNull())
-                )
-
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body?.status == "uploaded" || body?.status == "duplicate") {
-                        val photoId = body.photoId ?: System.currentTimeMillis()
-                        photoDao.insertAll(
-                            listOf(
-                                PhotoEntity(
-                                    id = photoId,
-                                    filename = filename,
-                                    hash = hash,
-                                    size = bytes.size.toLong(),
-                                    createdAt = now,
-                                    syncedAt = now,
-                                    path = file.toURI().toString()
-                                )
-                            )
+                val ids = photoDao.insertAll(
+                    listOf(
+                        PhotoEntity(
+                            filename = file.name,
+                            hash = hash,
+                            size = bytes.size.toLong(),
+                            createdAt = now,
+                            path = Uri.fromFile(file).toString(),
+                            isProcessed = false
                         )
-                        uploaded++
-                    }
-                }
+                    )
+                )
+                val id = ids.firstOrNull() ?: continue
+                val saved = photoDao.getPhotoById(id) ?: continue
+                pipelineService.processOnePhoto(saved)
+                processed++
             } catch (e: Exception) {
-                Log.e("GalleryVM", "Sync failed for ${file.name}", e)
+                Log.e("GalleryVM", "Processing failed for ${file.name}", e)
             }
         }
-        Log.d("GalleryVM", "Synced $uploaded/${files.size} photos")
+        Log.d("GalleryVM", "Processed $processed/${files.size} photos")
     }
 
     private fun sha256(bytes: ByteArray): String {

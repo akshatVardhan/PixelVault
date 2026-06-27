@@ -3,7 +3,6 @@ package com.pixelvault.app.di
 import android.content.Context
 import androidx.room.Room
 import com.pixelvault.app.data.local.AppDatabase
-import com.pixelvault.app.data.local.ClusterDao
 import com.pixelvault.app.data.local.FaceDao
 import com.pixelvault.app.data.local.PhotoDao
 import com.pixelvault.app.data.local.TagDao
@@ -25,7 +24,7 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "pixelvault.db"
-        ).addMigrations(AppDatabase.MIGRATION_1_2)
+        ).fallbackToDestructiveMigration()
             .build()
 
     @Provides
@@ -35,10 +34,5 @@ object DatabaseModule {
     fun provideTagDao(db: AppDatabase): TagDao = db.tagDao()
 
     @Provides
-    @Singleton
     fun provideFaceDao(db: AppDatabase): FaceDao = db.faceDao()
-
-    @Provides
-    @Singleton
-    fun provideClusterDao(db: AppDatabase): ClusterDao = db.clusterDao()
 }

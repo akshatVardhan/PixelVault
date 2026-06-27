@@ -9,10 +9,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SyncStatusViewModel @Inject constructor(
-    private val repo: SyncStatusRepo
+class ProcessingStatusViewModel @Inject constructor(
+    private val repo: ProcessingStatusRepo
 ) : ViewModel() {
-    val status: StateFlow<SyncStatus> = repo.status
+    val status: StateFlow<ProcessingStatusRepo.ProcessingStatus> = repo.status
 
     init {
         viewModelScope.launch {

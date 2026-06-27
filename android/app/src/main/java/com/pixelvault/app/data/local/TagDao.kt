@@ -22,4 +22,7 @@ interface TagDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(tags: List<TagEntity>)
+
+    @Query("DELETE FROM tags WHERE photo_id = :photoId")
+    suspend fun deleteTagsForPhoto(photoId: Long)
 }
