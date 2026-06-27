@@ -83,4 +83,14 @@ class SettingsDataStore @Inject constructor(
             prefs[KEY_REMOTE_SYNC_ENABLED] = enabled
         }
     }
+
+    private val KEY_LAST_PROCESSED_AT = stringPreferencesKey("last_processed_at")
+
+    val lastProcessedAt: Flow<String?> = context.dataStore.data.map { it[KEY_LAST_PROCESSED_AT] }
+
+    suspend fun setLastProcessedAt(timestamp: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LAST_PROCESSED_AT] = timestamp
+        }
+    }
 }

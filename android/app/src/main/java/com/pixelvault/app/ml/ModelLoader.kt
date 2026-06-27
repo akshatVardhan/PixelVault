@@ -25,7 +25,6 @@ class ModelLoader @Inject constructor(
             val options = Interpreter.Options().apply {
                 when (delegate) {
                     DelegateSelector.DelegateType.NNAPI -> {
-                        setUseNNAPIForFloat(true)
                         addDelegate(NnApiDelegate())
                     }
                     DelegateSelector.DelegateType.GPU -> {

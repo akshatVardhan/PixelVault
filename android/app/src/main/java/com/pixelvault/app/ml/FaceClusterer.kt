@@ -74,7 +74,7 @@ class FaceClusterer @Inject constructor(
         )
     }
 
-    private fun cosineSimilarity(a: FloatArray, b: DoubleArray): Double {
+    private fun cosineSimilarity(a: FloatArray, b: FloatArray): Double {
         var dot = 0.0
         var normA = 0.0
         var normB = 0.0

@@ -12,6 +12,7 @@ import com.pixelvault.app.data.local.SettingsDataStore
 import com.pixelvault.app.data.remote.ApiService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody

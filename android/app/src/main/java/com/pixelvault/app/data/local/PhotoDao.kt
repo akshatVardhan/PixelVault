@@ -31,4 +31,13 @@ interface PhotoDao {
 
     @Query("SELECT * FROM photos WHERE hash = :hash LIMIT 1")
     suspend fun getByHash(hash: String): PhotoEntity?
+
+    @Query("UPDATE photos SET scene_label = :label WHERE id = :photoId")
+    suspend fun updateSceneLabel(photoId: Long, label: String)
+
+    @Query("UPDATE photos SET is_processed = 1 WHERE id = :photoId")
+    suspend fun markProcessed(photoId: Long)
+
+    @Query("SELECT * FROM photos WHERE SUBSTR(created_at, 6, 5) = :monthDay")
+    suspend fun getPhotosOnThisDay(monthDay: String): List<PhotoEntity>
 }

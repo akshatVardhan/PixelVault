@@ -41,7 +41,7 @@ import com.pixelvault.app.ui.theme.LocalShadcnColors
 fun PhotoDetailScreen(
     photoId: Long,
     onBack: () -> Unit,
-    onPersonClick: (Int) -> Unit = {},
+    onPersonClick: (Long) -> Unit = {},
     viewModel: PhotoDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()

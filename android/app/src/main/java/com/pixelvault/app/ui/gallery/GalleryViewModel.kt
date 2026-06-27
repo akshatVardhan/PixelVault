@@ -89,6 +89,7 @@ class GalleryViewModel @Inject constructor(
                 photoDao.insertAll(
                     listOf(
                         PhotoEntity(
+                            id = 0,
                             filename = file.name,
                             hash = hash,
                             size = bytes.size.toLong(),

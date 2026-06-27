@@ -26,7 +26,7 @@ import com.pixelvault.app.ui.components.ShimmerGrid
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PeopleScreen(
-    onClusterClick: (Int) -> Unit,
+    onClusterClick: (Long) -> Unit,
     viewModel: PeopleViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()

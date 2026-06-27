@@ -14,6 +14,7 @@ import com.pixelvault.app.data.local.SettingsDataStore
 import com.pixelvault.app.ml.MLPipelineService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import java.io.File
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
@@ -41,10 +42,12 @@ class PhotoProcessingWorker @AssistedInject constructor(
                 if (photoDao.getByHash(hash) != null) continue
                 val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
                 val entity = PhotoEntity(
+                    id = 0,
                     filename = file.name,
                     hash = hash,
-                    size = bytes.length.toLong(),
+                    size = bytes.size.toLong(),
                     createdAt = now,
+                    syncedAt = null,
                     path = Uri.fromFile(file).toString(),
                     isProcessed = false
                 )
