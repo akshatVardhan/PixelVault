@@ -11,6 +11,6 @@ sealed class Screen(val route: String) {
     }
 
     data object PersonPhotos : Screen("person/{clusterId}") {
-        fun create(clusterId: Int) = "person/$clusterId"
+        fun create(clusterId: Long) = "person/$clusterId"
     }
 }

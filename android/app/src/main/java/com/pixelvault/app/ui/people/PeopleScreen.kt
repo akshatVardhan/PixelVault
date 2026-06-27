@@ -36,14 +36,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.pixelvault.app.data.remote.ClusterDto
+import com.pixelvault.app.data.local.ClusterEntity
 import com.pixelvault.app.ui.components.PeopleEmptyState
 import com.pixelvault.app.ui.components.ShimmerGrid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PeopleScreen(
-    onClusterClick: (Int) -> Unit,
+    onClusterClick: (Long) -> Unit,
     viewModel: PeopleViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -106,7 +106,7 @@ fun PeopleScreen(
 
 @Composable
 private fun PersonClusterCard(
-    cluster: ClusterDto,
+    cluster: ClusterEntity,
     onClick: () -> Unit
 ) {
     Card(

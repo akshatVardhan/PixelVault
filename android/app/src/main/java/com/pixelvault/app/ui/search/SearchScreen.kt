@@ -120,7 +120,7 @@ fun SearchScreen(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(state.results, key = { it.photo.id }) { result ->
+                        items(state.results, key = { it.id }) { photo ->
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -130,8 +130,8 @@ fun SearchScreen(
                                 shadowElevation = 2.dp
                             ) {
                                 AsyncImage(
-                                    model = Uri.parse(result.photo.path),
-                                    contentDescription = result.photo.filename,
+                                    model = Uri.parse(photo.path),
+                                    contentDescription = photo.filename,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize()
                                 )

@@ -37,7 +37,7 @@ import com.pixelvault.app.ui.components.ShimmerGrid
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonPhotosScreen(
-    clusterId: Int,
+    clusterId: Long,
     onBack: () -> Unit,
     viewModel: PersonPhotosViewModel = hiltViewModel()
 ) {
