@@ -44,9 +44,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(
             route = Screen.PersonPhotos.route,
-            arguments = listOf(navArgument("clusterId") { type = NavType.IntType })
+            arguments = listOf(navArgument("clusterId") { type = NavType.LongType })
         ) { backStackEntry ->
-            val clusterId = backStackEntry.arguments?.getInt("clusterId") ?: return@composable
+            val clusterId = backStackEntry.arguments?.getLong("clusterId") ?: return@composable
             PersonPhotosScreen(
                 clusterId = clusterId,
                 onBack = { navController.popBackStack() }

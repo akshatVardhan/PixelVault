@@ -15,7 +15,7 @@ interface PhotoDao {
     suspend fun getPhotoById(id: Long): PhotoEntity?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(photos: List<PhotoEntity>): List<Long>
+    suspend fun insertAll(photos: List<PhotoEntity>)
 
     @Query("SELECT COUNT(*) FROM photos")
     suspend fun count(): Int
@@ -29,8 +29,21 @@ interface PhotoDao {
     @Query("SELECT * FROM photos WHERE is_processed = 0")
     suspend fun getUnprocessedPhotos(): List<PhotoEntity>
 
-    @Query("SELECT * FROM photos WHERE CAST(strftime('%m-%d', created_at) AS TEXT) = :todayMonthDay")
-    suspend fun getPhotosOnThisDay(todayMonthDay: String): List<PhotoEntity>
+    @Query("""
+        SELECT DISTINCT p.* FROM photos p
+        INNER JOIN tags t ON p.id = t.photo_id
+        WHERE t.label LIKE '%' || :query || '%'
+        ORDER BY t.confidence DESC
+    """)
+    suspend fun searchByTags(query: String): List<PhotoEntity>
+
+    @Query("""
+        SELECT p.* FROM photos p
+        INNER JOIN faces f ON p.id = f.photo_id
+        WHERE f.cluster_id = :clusterId
+        GROUP BY p.id
+    """)
+    suspend fun getPhotosByCluster(clusterId: Long): List<PhotoEntity>
 
     @Query("UPDATE photos SET is_processed = 1 WHERE id = :id")
     suspend fun markProcessed(id: Long)

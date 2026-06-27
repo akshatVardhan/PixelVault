@@ -2,6 +2,8 @@ package com.pixelvault.app.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pixelvault.app.data.local.PhotoDao
+import com.pixelvault.app.data.local.PhotoEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,7 +14,7 @@ import javax.inject.Inject
 
 data class SearchState(
     val query: String = "",
-    val results: List<SearchResult> = emptyList(),
+    val results: List<PhotoEntity> = emptyList(),
     val isSearching: Boolean = false,
     val hasSearched: Boolean = false,
     val mode: SearchMode = SearchMode.SEMANTIC
@@ -22,7 +24,7 @@ enum class SearchMode { SEMANTIC, TAG }
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchApi: SearchApiService
+    private val photoDao: PhotoDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SearchState())
@@ -42,9 +44,9 @@ class SearchViewModel @Inject constructor(
             _state.value = _state.value.copy(isSearching = true)
             try {
                 val results = if (_state.value.mode == SearchMode.SEMANTIC) {
-                    searchApi.semanticSearch(query)
+                    emptyList()
                 } else {
-                    searchApi.tagSearch(query)
+                    photoDao.searchByTags(query)
                 }
                 _state.value = _state.value.copy(
                     results = results,

@@ -1,120 +1,78 @@
 package com.pixelvault.app.ml
 
-import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.room.RoomDatabase
-import com.pixelvault.app.data.local.*
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import com.pixelvault.app.data.local.AppDatabase
+import com.pixelvault.app.data.local.FaceEntity
+import com.pixelvault.app.data.local.PhotoEntity
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class MLPipelineService @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val sceneDetector: SceneDetector,
     private val foodClassifier: FoodClassifier,
     private val faceDetector: FaceDetector,
     private val faceEmbedder: FaceEmbedder,
+    private val faceClusterer: FaceClusterer,
     private val db: AppDatabase
 ) {
-    private val photoDao get() = db.photoDao()
-    private val tagDao get() = db.tagDao()
-    private val faceDao get() = db.faceDao()
-
-    suspend fun processOnePhoto(photo: PhotoEntity) = withContext(Dispatchers.Default) {
-        val bitmap = loadBitmap(photo.path) ?: return@withContext
-
-        val sceneDetections = sceneDetector.detect(bitmap)
-        val foodClassifications = foodClassifier.classify(bitmap)
-        val faceBounds = faceDetector.detect(bitmap)
-
-        val dbResults = DbResults(
-            sceneTags = sceneDetections.take(5).map {
-                TagEntity(photoId = photo.id, type = "tag", label = it.label, confidence = it.confidence.toDouble())
-            },
-            sceneLabel = sceneDetections.firstOrNull()?.label,
-            sceneConfidence = sceneDetections.firstOrNull()?.confidence?.toDouble(),
-            foodTags = foodClassifications.filter { it.confidence > 0.3f }.map {
-                TagEntity(photoId = photo.id, type = "food", label = it.label, confidence = it.confidence.toDouble())
-            },
-            foodLabel = foodClassifications.firstOrNull()?.let { if (it.confidence > 0.3f) it.label else null },
-            faceEntities = faceBounds.mapNotNull { fb ->
-                val crop = cropBitmap(bitmap, fb.left, fb.top, fb.right, fb.bottom) ?: return@mapNotNull null
-                val embedding = faceEmbedder.embed(crop)
-                FaceEntity(photoId = photo.id, embedding = packEmbedding(embedding), boundingBox = "${fb.left},${fb.top},${fb.right},${fb.bottom}")
-            }
-        )
+    suspend fun processOnePhoto(photo: PhotoEntity) {
+        val bitmap = try {
+            val uri = Uri.parse(photo.path)
+            val inputStream = android.content.ContentResolver.openInputStream(uri)
+            BitmapFactory.decodeStream(inputStream)
+        } catch (_: Exception) {
+            BitmapFactory.decodeFile(photo.path)
+        } ?: return
 
         db.withTransaction {
-            tagDao.deleteTagsForPhoto(photo.id)
-            faceDao.deleteFacesForPhoto(photo.id)
-            tagDao.insertAll(dbResults.sceneTags + dbResults.foodTags)
-            faceDao.insertAll(dbResults.faceEntities)
-            dbResults.sceneLabel?.let { photoDao.updateSceneLabel(photo.id, it, dbResults.sceneConfidence) }
-            dbResults.foodLabel?.let { photoDao.updateFoodLabel(photo.id, it) }
-            photoDao.updateFaceCount(photo.id, dbResults.faceEntities.size)
-            photoDao.markProcessed(photo.id)
-        }
-
-        bitmap.recycle()
-    }
-
-    private data class DbResults(
-        val sceneTags: List<TagEntity>,
-        val sceneLabel: String?,
-        val sceneConfidence: Double?,
-        val foodTags: List<TagEntity>,
-        val foodLabel: String?,
-        val faceEntities: List<FaceEntity>
-    )
-
-    private fun loadBitmap(path: String): Bitmap? {
-        return try {
-            val uri = Uri.parse(path)
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val opts = BitmapFactory.Options().apply {
-                inJustDecodeBounds = true
+            val sceneDetections = sceneDetector.detect(bitmap)
+            val bestScene = sceneDetections.maxByOrNull { it.confidence }
+            if (bestScene != null) {
+                db.photoDao().updateSceneLabel(photo.id, bestScene.label, bestScene.confidence.toDouble())
             }
-            BitmapFactory.decodeStream(inputStream, null, opts)
-            inputStream.close()
 
-            val maxDimension = 1280
-            val scale = maxOf(opts.outWidth, opts.outHeight) / maxDimension.toFloat()
-            val sampleSize = if (scale > 1f) (1 until 32).firstOrNull { scale <= it } ?: 1 else 1
-
-            val finalOpts = BitmapFactory.Options().apply {
-                inSampleSize = maxOf(sampleSize, 1)
+            val foodResults = foodClassifier.classify(bitmap)
+            val bestFood = foodResults.firstOrNull()
+            if (bestFood != null) {
+                db.photoDao().updateFoodLabel(photo.id, bestFood.label)
             }
-            val inputStream2 = context.contentResolver.openInputStream(uri) ?: return null
-            BitmapFactory.decodeStream(inputStream2, null, finalOpts)
-        } catch (_: Exception) {
-            null
-        }
-    }
 
-    private fun cropBitmap(bitmap: Bitmap, left: Float, top: Float, right: Float, bottom: Float): Bitmap? {
-        val bw = bitmap.width
-        val bh = bitmap.height
-        val x = (left * bw).toInt().coerceIn(0, bw)
-        val y = (top * bh).toInt().coerceIn(0, bh)
-        val w = ((right - left) * bw).toInt().coerceIn(1, bw - x)
-        val h = ((bottom - top) * bh).toInt().coerceIn(1, bh - y)
-        return try {
-            Bitmap.createBitmap(bitmap, x, y, w, h)
-        } catch (_: Exception) {
-            null
+            val faceBounds = faceDetector.detect(bitmap)
+            db.photoDao().updateFaceCount(photo.id, faceBounds.size)
+
+            if (faceBounds.isNotEmpty()) {
+                val faces = faceBounds.map { bounds ->
+                    val crop = Bitmap.createBitmap(
+                        bitmap,
+                        bounds.left.toInt().coerceAtLeast(0),
+                        bounds.top.toInt().coerceAtLeast(0),
+                        (bounds.right - bounds.left).toInt().coerceAtMost(bitmap.width),
+                        (bounds.bottom - bounds.top).toInt().coerceAtMost(bitmap.height)
+                    )
+                    val embedding = faceEmbedder.embed(crop)
+                    FaceEntity(
+                        photoId = photo.id,
+                        embedding = packEmbedding(embedding),
+                        boundingBox = "${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}"
+                    )
+                }
+                db.faceDao().insertAll(faces)
+            }
+
+            db.photoDao().markProcessed(photo.id)
         }
+
+        faceClusterer.clusterNewFaces()
     }
 
     private fun packEmbedding(embedding: FloatArray): ByteArray {
-        val bb = ByteBuffer.allocate(embedding.size * 4).apply { order(ByteOrder.nativeOrder()) }
-        embedding.forEach { bb.putFloat(it) }
-        return bb.array()
+        val bos = ByteArrayOutputStream()
+        val dos = DataOutputStream(bos)
+        for (v in embedding) dos.writeFloat(v)
+        return bos.toByteArray()
     }
 }

@@ -19,7 +19,7 @@ import androidx.room.PrimaryKey
 data class FaceEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "photo_id") val photoId: Long,
-    val embedding: ByteArray,
+    @ColumnInfo(typeAffinity = ColumnInfo.BLOB) val embedding: ByteArray? = null,
     @ColumnInfo(name = "bounding_box") val boundingBox: String? = null,
-    @ColumnInfo(name = "cluster_id") val clusterId: Long? = null
+    @ColumnInfo(name = "cluster_id") val clusterId: Long? = null,
 )

@@ -1,62 +1,57 @@
 package com.pixelvault.app.ml
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.res.AssetFileDescriptor
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.GpuDelegate
+import org.tensorflow.lite.nnapi.NnApiDelegate
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import java.security.MessageDigest
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ModelLoader @Inject constructor(
-    @ApplicationContext private val context: Context,
+    private val context: Context,
     private val delegateSelector: DelegateSelector
 ) {
-    private val cache = ConcurrentHashMap<String, Interpreter>()
+    private val cache = mutableMapOf<String, Interpreter>()
 
-    suspend fun load(modelPath: String): Interpreter {
-        return cache.getOrPut(modelPath) {
-            val buffer = loadModelFile(modelPath)
-            val hash = md5(buffer)
-            val delegate = delegateSelector.select(hash)
+    fun load(modelName: String): Interpreter {
+        return cache.getOrPut(modelName) {
+            val buffer = loadModelFile(modelName)
+            val delegate = delegateSelector.select()
             val options = Interpreter.Options().apply {
-                setNumThreads(4)
                 when (delegate) {
-                    DelegateSelector.DelegateType.NNAPI -> setDelegate(org.tensorflow.lite.nnapi.NnApiDelegate())
-                    DelegateSelector.DelegateType.GPU -> setDelegate(org.tensorflow.lite.gpu.GpuDelegateFactory().create())
+                    DelegateSelector.DelegateType.NNAPI -> {
+                        setUseNNAPIForFloat(true)
+                        addDelegate(NnApiDelegate())
+                    }
+                    DelegateSelector.DelegateType.GPU -> {
+                        try {
+                            addDelegate(GpuDelegate())
+                        } catch (_: Throwable) { }
+                    }
                     DelegateSelector.DelegateType.CPU -> { }
                 }
+                setNumThreads(4)
             }
             Interpreter(buffer, options)
         }
     }
 
-    fun unload(modelPath: String) {
-        cache.remove(modelPath)?.close()
+    private fun loadModelFile(modelName: String): MappedByteBuffer {
+        val afd: AssetFileDescriptor = context.assets.openFd(modelName)
+        val inputStream = FileInputStream(afd.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = afd.startOffset
+        val declaredLength = afd.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    fun closeAll() {
+    fun close() {
         cache.values.forEach { it.close() }
         cache.clear()
-    }
-
-    private fun loadModelFile(modelPath: String): MappedByteBuffer {
-        val fd = context.assets.openFd(modelPath)
-        val inputStream = FileInputStream(fd.fileDescriptor)
-        val channel = inputStream.channel
-        val startOffset = fd.startOffset
-        val declaredLength = fd.declaredLength
-        return channel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
-    private fun md5(buffer: MappedByteBuffer): String {
-        val digest = MessageDigest.getInstance("MD5")
-        val bytes = ByteArray(buffer.remaining())
-        buffer.duplicate().get(bytes)
-        return digest.digest(bytes).joinToString("") { "%02x".format(it) }
     }
 }

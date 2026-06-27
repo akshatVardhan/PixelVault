@@ -1,7 +1,16 @@
 package com.pixelvault.app.di
 
 import android.content.Context
-import com.pixelvault.app.ml.*
+import com.pixelvault.app.data.local.ClusterDao
+import com.pixelvault.app.data.local.FaceDao
+import com.pixelvault.app.ml.DelegateSelector
+import com.pixelvault.app.ml.FaceClusterer
+import com.pixelvault.app.ml.FaceDetector
+import com.pixelvault.app.ml.FaceEmbedder
+import com.pixelvault.app.ml.FoodClassifier
+import com.pixelvault.app.ml.MLPipelineService
+import com.pixelvault.app.ml.ModelLoader
+import com.pixelvault.app.ml.SceneDetector
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,59 +24,40 @@ object MLModule {
 
     @Provides
     @Singleton
-    fun provideDelegateSelector(@ApplicationContext context: Context): DelegateSelector {
-        return DelegateSelector(context)
-    }
+    fun provideDelegateSelector(@ApplicationContext ctx: Context) = DelegateSelector(ctx)
 
     @Provides
     @Singleton
-    fun provideModelLoader(
-        @ApplicationContext context: Context,
-        delegateSelector: DelegateSelector
-    ): ModelLoader {
-        return ModelLoader(context, delegateSelector)
-    }
+    fun provideModelLoader(@ApplicationContext ctx: Context, selector: DelegateSelector) = ModelLoader(ctx, selector)
 
     @Provides
     @Singleton
-    fun provideSceneDetector(
-        @ApplicationContext context: Context,
-        modelLoader: ModelLoader
-    ): SceneDetector {
-        return SceneDetector(context, modelLoader)
-    }
+    fun provideSceneDetector(@ApplicationContext ctx: Context, loader: ModelLoader) = SceneDetector(ctx, loader)
 
     @Provides
     @Singleton
-    fun provideFoodClassifier(
-        @ApplicationContext context: Context,
-        modelLoader: ModelLoader
-    ): FoodClassifier {
-        return FoodClassifier(context, modelLoader)
-    }
+    fun provideFoodClassifier(@ApplicationContext ctx: Context, loader: ModelLoader) = FoodClassifier(ctx, loader)
 
     @Provides
     @Singleton
-    fun provideFaceDetector(): FaceDetector {
-        return FaceDetector()
-    }
+    fun provideFaceDetector() = FaceDetector()
 
     @Provides
     @Singleton
-    fun provideFaceEmbedder(modelLoader: ModelLoader): FaceEmbedder {
-        return FaceEmbedder(modelLoader)
-    }
+    fun provideFaceEmbedder(loader: ModelLoader) = FaceEmbedder(loader)
+
+    @Provides
+    @Singleton
+    fun provideFaceClusterer(faceDao: FaceDao, clusterDao: ClusterDao) = FaceClusterer(faceDao, clusterDao)
 
     @Provides
     @Singleton
     fun provideMLPipelineService(
-        @ApplicationContext context: Context,
         sceneDetector: SceneDetector,
         foodClassifier: FoodClassifier,
         faceDetector: FaceDetector,
         faceEmbedder: FaceEmbedder,
+        faceClusterer: FaceClusterer,
         db: com.pixelvault.app.data.local.AppDatabase
-    ): MLPipelineService {
-        return MLPipelineService(context, sceneDetector, foodClassifier, faceDetector, faceEmbedder, db)
-    }
+    ) = MLPipelineService(sceneDetector, foodClassifier, faceDetector, faceEmbedder, faceClusterer, db)
 }

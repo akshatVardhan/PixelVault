@@ -2,64 +2,56 @@ package com.pixelvault.app.ml
 
 import android.content.Context
 import android.graphics.Bitmap
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class FoodClassifier @Inject constructor(
-    @ApplicationContext private val context: Context,
+    private val context: Context,
     private val modelLoader: ModelLoader
 ) {
     private val labels: List<String> by lazy {
         val reader = BufferedReader(InputStreamReader(context.assets.open("imagenet_labels.txt")))
         reader.readLines()
     }
-    private val inputSize = 224
 
-    suspend fun classify(bitmap: Bitmap): List<Classification> = withContext(Dispatchers.Default) {
+    fun classify(bitmap: Bitmap): List<Classification> {
         val interpreter = modelLoader.load("efficientnet_lite0_int8.tflite")
-        val input = preprocess(bitmap)
-        val output = Array(1) { ByteArray(1001) }
+        val resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
+        val input = preprocess(resized)
+        val output = Array(1) { FloatArray(1000) }
         interpreter.run(input, output)
-        postprocess(output[0])
+        return postprocess(output[0])
     }
 
-    private fun preprocess(bitmap: Bitmap): ByteBuffer {
-        val resized = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
-        val buffer = ByteBuffer.allocateDirect(inputSize * inputSize * 3).apply {
-            order(ByteOrder.nativeOrder())
+    private fun preprocess(bitmap: Bitmap): Array<Array<Array<FloatArray>>> {
+        val intValues = IntArray(224 * 224)
+        bitmap.getPixels(intValues, 0, 224, 0, 0, 224, 224)
+        val input = Array(1) { Array(3) { Array(224) { FloatArray(224) } } }
+        for (y in 0 until 224) {
+            for (x in 0 until 224) {
+                val pixel = intValues[y * 224 + x]
+                input[0][0][y][x] = ((pixel shr 16) and 0xFF) / 127.5f - 1f
+                input[0][1][y][x] = ((pixel shr 8) and 0xFF) / 127.5f - 1f
+                input[0][2][y][x] = (pixel and 0xFF) / 127.5f - 1f
+            }
         }
-        val pixels = IntArray(inputSize * inputSize)
-        resized.getPixels(pixels, 0, inputSize, 0, 0, inputSize, inputSize)
-        for (pixel in pixels) {
-            buffer.put(((pixel shr 16) and 0xFF).toByte())
-            buffer.put(((pixel shr 8) and 0xFF).toByte())
-            buffer.put((pixel and 0xFF).toByte())
-        }
-        buffer.rewind()
-        return buffer
+        return input
     }
 
-    private fun postprocess(output: ByteArray): List<Classification> {
-        val scores = FloatArray(output.size) { (output[it].toInt() and 0xFF) / 255.0f }
-        val softmax = FloatArray(scores.size)
-        var max = scores.max()
-        var sum = 0f
-        for (i in scores.indices) {
-            softmax[i] = kotlin.math.exp(scores[i] - max)
-            sum += softmax[i]
-        }
-        for (i in softmax.indices) softmax[i] /= sum
-        return softmax.withIndex()
+    private fun postprocess(output: FloatArray): List<Classification> {
+        val expSum = output.sumOf { kotlin.math.exp(it.toDouble()) }
+        val probs = output.map { kotlin.math.exp(it.toDouble()) / expSum }
+        val indexed = probs.withIndex()
             .sortedByDescending { it.value }
             .take(3)
-            .map { Classification(labels.getOrElse(it.index) { "unknown" }, it.value) }
+        return indexed.map { (idx, prob) ->
+            Classification(
+                label = labels.getOrElse(idx) { "unknown" },
+                confidence = prob.toFloat()
+            )
+        }
     }
 }

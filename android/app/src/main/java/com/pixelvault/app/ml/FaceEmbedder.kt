@@ -1,10 +1,6 @@
 package com.pixelvault.app.ml
 
 import android.graphics.Bitmap
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,32 +8,37 @@ import javax.inject.Singleton
 class FaceEmbedder @Inject constructor(
     private val modelLoader: ModelLoader
 ) {
-    private val inputSize = 112
-
-    suspend fun embed(faceBitmap: Bitmap): FloatArray = withContext(Dispatchers.Default) {
+    fun embed(bitmap: Bitmap): FloatArray {
         val interpreter = modelLoader.load("mobilefacenet.tflite")
-        val input = preprocess(faceBitmap)
+        val resized = Bitmap.createScaledBitmap(bitmap, 112, 112, true)
+        val input = preprocess(resized)
         val output = Array(1) { FloatArray(128) }
         interpreter.run(input, output)
-        output[0]
+        return normalize(output[0])
     }
 
-    private fun preprocess(bitmap: Bitmap): ByteBuffer {
-        val resized = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
-        val buffer = ByteBuffer.allocateDirect(inputSize * inputSize * 3 * 4).apply {
-            order(ByteOrder.nativeOrder())
+    private fun preprocess(bitmap: Bitmap): Array<Array<Array<FloatArray>>> {
+        val intValues = IntArray(112 * 112)
+        bitmap.getPixels(intValues, 0, 112, 0, 0, 112, 112)
+        val input = Array(1) { Array(3) { Array(112) { FloatArray(112) } } }
+        for (y in 0 until 112) {
+            for (x in 0 until 112) {
+                val pixel = intValues[y * 112 + x]
+                input[0][0][y][x] = (((pixel shr 16) and 0xFF) / 255.0f - 0.5f) * 2f
+                input[0][1][y][x] = (((pixel shr 8) and 0xFF) / 255.0f - 0.5f) * 2f
+                input[0][2][y][x] = ((pixel and 0xFF) / 255.0f - 0.5f) * 2f
+            }
         }
-        val pixels = IntArray(inputSize * inputSize)
-        resized.getPixels(pixels, 0, inputSize, 0, 0, inputSize, inputSize)
-        for (pixel in pixels) {
-            val r = ((pixel shr 16) and 0xFF) / 255.0f
-            val g = ((pixel shr 8) and 0xFF) / 255.0f
-            val b = (pixel and 0xFF) / 255.0f
-            buffer.putFloat((r - 0.5f) / 0.5f)
-            buffer.putFloat((g - 0.5f) / 0.5f)
-            buffer.putFloat((b - 0.5f) / 0.5f)
+        return input
+    }
+
+    private fun normalize(embedding: FloatArray): FloatArray {
+        var norm = 0f
+        for (v in embedding) norm += v * v
+        norm = kotlin.math.sqrt(norm)
+        if (norm > 0f) {
+            for (i in embedding.indices) embedding[i] /= norm
         }
-        buffer.rewind()
-        return buffer
+        return embedding
     }
 }
