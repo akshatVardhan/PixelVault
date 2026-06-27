@@ -10,9 +10,9 @@
 Phone (Android) — Primary Device           PC (RTX 3070) — Optional Backup
 ┌──────────────────────────────────┐       ┌───────────────────────────────┐
 │  Kotlin / Jetpack Compose        │       │  FastAPI Backend              │
-│  ├─ Gallery, Search, People UI   │       │  ├─ Sync Engine              │
-│  ├─ On-Device ML Pipeline        │◄─────►│  ├─ Remote Sync (optional)   │
-│  │  ├─ YOLOv8n INT8 (scene)     │  LAN  │  ├─ SQLite (meta)            │
+│  ├─ Gallery, Search, People UI   │<─────>│  ├─ Sync Engine              │
+│  ├─ On-Device ML Pipeline        │  LAN  │  ├─ Remote Sync (optional)   │
+│  │  ├─ YOLOv8n INT8 (scene)     │  sync │  ├─ SQLite (meta)            │
 │  │  ├─ EfficientNet-Lite0 (food) │       │  └─ Dashboard (WIP)          │
 │  │  ├─ ML Kit (face detect)      │       └───────────────────────────────┘
 │  │  └─ MobileFaceNet (embed)    │
