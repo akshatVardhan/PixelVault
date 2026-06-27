@@ -81,4 +81,5 @@ dependencies {
     implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.gpu)
     implementation(libs.mlkit.face.detection)
+    implementation(libs.tensorflow.lite.nnapi)
 }
