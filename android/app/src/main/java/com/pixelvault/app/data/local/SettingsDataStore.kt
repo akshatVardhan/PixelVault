@@ -19,10 +19,15 @@ class SettingsDataStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
+        private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
         private val KEY_BASE_URL = stringPreferencesKey("base_url")
         private val KEY_AUTH_TOKEN = stringPreferencesKey("auth_token")
         private const val DEFAULT_BASE_URL = "http://10.0.2.2:8000"
         private const val DEFAULT_AUTH_TOKEN = "dev-token"
+    }
+
+    val themeMode: Flow<String> = context.dataStore.data.map { settings ->
+        settings[KEY_THEME_MODE] ?: "SYSTEM"
     }
 
     val baseUrl: Flow<String> = context.dataStore.data.map { prefs ->
@@ -31,6 +36,12 @@ class SettingsDataStore @Inject constructor(
 
     val authToken: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[KEY_AUTH_TOKEN] ?: DEFAULT_AUTH_TOKEN
+    }
+
+    suspend fun setThemeMode(mode: String) {
+        context.dataStore.edit { settings ->
+            settings[KEY_THEME_MODE] = mode
+        }
     }
 
     suspend fun setBaseUrl(url: String) {

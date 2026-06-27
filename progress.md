@@ -45,6 +45,7 @@ pixelvault/
 - [x] **8** — Gallery UI: GalleryScreen (date-grouped grid), GalleryViewModel, PhotoDetailScreen (tags chips, faces), PeopleScreen (cluster grid), PersonPhotosScreen, Navigation graph
 - [x] **9** — Search UI: SearchScreen (debounced 500ms, shimmer), SearchApiService, SearchViewModel, bottom nav search icon
 - [x] **10** — Dashboard + notifications: backend/dashboard/ (Jinja2 HTML: stats, chart, logs), GET /notifications/on-this-day, Android NotificationWorker (daily)
+- [x] **15** — shadcn theme system with violet/slate palette, custom typography, shared components
 
 ## Key Decisions
 - ML runs on PC (RTX 3070), not on-device

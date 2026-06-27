@@ -19,8 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.pixelvault.app.data.local.SettingsDataStore
+import com.pixelvault.app.ui.theme.ThemeMode
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -31,6 +34,7 @@ import com.pixelvault.app.ui.navigation.NavGraph
 import com.pixelvault.app.ui.navigation.Screen
 import com.pixelvault.app.ui.theme.PixelVaultTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 data class BottomNavItem(
     val label: String,
@@ -47,10 +51,15 @@ val bottomNavItems = listOf(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val settings: SettingsDataStore by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PixelVaultTheme {
+            val themeMode by settings.themeMode.collectAsState(initial = "SYSTEM")
+            PixelVaultTheme(
+                themeMode = try { ThemeMode.valueOf(themeMode) } catch (_: Exception) { ThemeMode.SYSTEM }
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
