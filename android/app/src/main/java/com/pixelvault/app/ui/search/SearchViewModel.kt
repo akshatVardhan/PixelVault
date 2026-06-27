@@ -2,8 +2,6 @@ package com.pixelvault.app.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelvault.app.data.local.PhotoDao
-import com.pixelvault.app.data.local.PhotoEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -14,17 +12,18 @@ import javax.inject.Inject
 
 data class SearchState(
     val query: String = "",
-    val results: List<PhotoEntity> = emptyList(),
+    val results: List<SearchResult> = emptyList(),
     val isSearching: Boolean = false,
     val hasSearched: Boolean = false,
-    val mode: SearchMode = SearchMode.SEMANTIC
+    val mode: SearchMode = SearchMode.TAGS,
+    val popularTags: List<String> = listOf("sunset", "portrait", "travel", "food", "nature", "city", "beach", "night", "architecture", "wildlife")
 )
 
-enum class SearchMode { SEMANTIC, TAG }
+enum class SearchMode { TAGS, SCENES, PEOPLE }
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val photoDao: PhotoDao
+    private val searchApi: SearchApiService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SearchState())
@@ -43,10 +42,10 @@ class SearchViewModel @Inject constructor(
             delay(500)
             _state.value = _state.value.copy(isSearching = true)
             try {
-                val results = if (_state.value.mode == SearchMode.SEMANTIC) {
-                    emptyList()
-                } else {
-                    photoDao.searchByTags(query)
+                val results = when (_state.value.mode) {
+                    SearchMode.TAGS -> searchApi.tagSearch(query)
+                    SearchMode.SCENES -> searchApi.tagSearch(query)
+                    SearchMode.PEOPLE -> emptyList()
                 }
                 _state.value = _state.value.copy(
                     results = results,
@@ -59,9 +58,8 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun toggleMode() {
-        val newMode = if (_state.value.mode == SearchMode.SEMANTIC) SearchMode.TAG else SearchMode.SEMANTIC
-        _state.value = _state.value.copy(mode = newMode)
+    fun setMode(mode: SearchMode) {
+        _state.value = _state.value.copy(mode = mode)
         onQueryChanged(_state.value.query)
     }
 }

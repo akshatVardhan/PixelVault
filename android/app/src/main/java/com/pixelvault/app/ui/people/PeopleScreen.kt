@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelvault.app.ui.components.PeopleEmptyState
 import com.pixelvault.app.ui.components.ShimmerGrid
-import com.pixelvault.app.ui.people.PersonClusterCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +36,7 @@ fun PeopleScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "People",
+                        "People (${state.clusters.size})",
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },
@@ -69,9 +68,9 @@ fun PeopleScreen(
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 150.dp),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
@@ -87,5 +86,3 @@ fun PeopleScreen(
         }
     }
 }
-
-

@@ -22,17 +22,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.pixelvault.app.data.local.SettingsDataStore
-import com.pixelvault.app.ui.theme.ThemeMode
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.pixelvault.app.data.local.SettingsDataStore
 import com.pixelvault.app.ui.navigation.NavGraph
 import com.pixelvault.app.ui.navigation.Screen
+import com.pixelvault.app.ui.theme.LocalShadcnColors
 import com.pixelvault.app.ui.theme.PixelVaultTheme
+import com.pixelvault.app.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -76,6 +80,7 @@ private fun PixelVaultMainScreen() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val density = LocalDensity.current
 
     val showBottomBar = currentDestination?.route in bottomNavItems.map { it.route }
 
@@ -83,8 +88,15 @@ private fun PixelVaultMainScreen() {
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 3.dp
+                    modifier = Modifier.drawBehind {
+                        val borderWidth = with(density) { 1.dp.toPx() }
+                        drawRect(
+                            color = LocalShadcnColors.current.border,
+                            top = 0f,
+                            bottom = borderWidth
+                        )
+                    },
+                    containerColor = MaterialTheme.colorScheme.surface
                 ) {
                     bottomNavItems.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
@@ -107,11 +119,11 @@ private fun PixelVaultMainScreen() {
                             },
                             label = { Text(item.label) },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                                selectedIconColor = LocalShadcnColors.current.accent,
+                                selectedTextColor = LocalShadcnColors.current.accent,
+                                unselectedIconColor = LocalShadcnColors.current.mutedForeground,
+                                unselectedTextColor = LocalShadcnColors.current.mutedForeground,
+                                indicatorColor = Color.Transparent
                             )
                         )
                     }

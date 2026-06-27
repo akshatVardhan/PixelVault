@@ -11,6 +11,7 @@ import com.pixelvault.app.ui.gallery.PhotoDetailScreen
 import com.pixelvault.app.ui.people.PeopleScreen
 import com.pixelvault.app.ui.people.PersonPhotosScreen
 import com.pixelvault.app.ui.search.SearchScreen
+import com.pixelvault.app.ui.settings.SettingsScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -33,7 +34,9 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.Search.route) {
-            SearchScreen()
+            SearchScreen(onPhotoClick = { photoId ->
+                navController.navigate(Screen.PhotoDetail.create(photoId))
+            })
         }
         composable(Screen.People.route) {
             PeopleScreen(
@@ -53,7 +56,7 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.Settings.route) {
-            androidx.compose.material3.Text("Settings — coming soon")
+            SettingsScreen()
         }
     }
 }
