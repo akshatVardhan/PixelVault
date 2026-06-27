@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,7 +61,7 @@ fun GalleryScreen(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         permissionGranted = granted
-        if (granted) viewModel.triggerSync()
+        if (granted) viewModel.triggerProcessing()
     }
 
     Scaffold(
@@ -76,7 +76,7 @@ fun GalleryScreen(
                 actions = {
                     IconButton(onClick = {
                         if (permissionGranted) {
-                            viewModel.triggerSync()
+                            viewModel.triggerProcessing()
                         } else {
                             permissionLauncher.launch(
                                 if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES
@@ -85,9 +85,9 @@ fun GalleryScreen(
                         }
                     }) {
                         Icon(
-                            Icons.Default.Sync,
-                            contentDescription = "Sync",
-                            tint = if (state.isSyncing)
+                            Icons.Default.PhotoLibrary,
+                            contentDescription = "Process",
+                            tint = if (state.isProcessing)
                                 MaterialTheme.colorScheme.primary
                             else
                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -120,8 +120,8 @@ fun GalleryScreen(
             }
             else -> {
                 PullToRefreshBox(
-                    isRefreshing = state.isSyncing,
-                    onRefresh = { viewModel.triggerSync() },
+                    isRefreshing = state.isProcessing,
+                    onRefresh = { viewModel.triggerProcessing() },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)

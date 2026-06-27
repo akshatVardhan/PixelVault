@@ -36,6 +36,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    aaptOptions {
+        noCompress("tflite")
+    }
 }
 
 dependencies {
@@ -72,4 +76,10 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.datastore.preferences)
     implementation(libs.work.runtime.ktx)
+
+    implementation(libs.tflite)
+    implementation(libs.tflite.support)
+    implementation(libs.tflite.gpu)
+    implementation(libs.tflite.nnapi)
+    implementation(libs.mlkit.face)
 }

@@ -4,11 +4,12 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [PhotoEntity::class, TagEntity::class],
-    version = 1,
+    entities = [PhotoEntity::class, TagEntity::class, FaceEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun photoDao(): PhotoDao
     abstract fun tagDao(): TagDao
+    abstract fun faceDao(): FaceDao
 }
